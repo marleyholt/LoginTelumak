@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Mestre | Telumak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Fonte RPG -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --color-bg: #0f172a; --color-text: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); }
+        .rpg-font { font-family: 'Cinzel', serif; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nao-salvo { color: #facc15 !important; text-shadow: 0 0 5px rgba(250, 204, 21, 0.5); }
+        
+        .card-scroll::-webkit-scrollbar { width: 4px; }
+        .card-scroll::-webkit-scrollbar-track { background: #374151; }
+        .card-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
+
+        /* Editor Rico */
+        .editor-content {
+            min-height: 100px; max-height: 200px; overflow-y: auto; background-color: #1f2937;
+            border: 1px solid #374151; padding: 0.5rem; color: #d1d5db; border-radius: 0.375rem;
+            outline: none; white-space: pre-wrap;
+        }
+        .editor-content:focus { border-color: #facc15; }
+        
+        .toolbar-btn {
+            background: #374151; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;
+            margin-right: 2px; transition: background 0.2s;
+        }
+        .toolbar-btn:hover { background: #4b5563; }
+
+        /* Dados e FABs */
+        .fab-dice { position: fixed; bottom: 20px; right: 20px; z-index: 40; transition: transform 0.2s; }
+        .fab-dice:hover { transform: scale(1.1); }
+        
+        /* Grimório no Canto Superior Direito (Abaixo do Header) */
+        .fab-list { position: fixed; top: 90px; right: 20px; z-index: 40; transition: transform 0.2s; }
+        .fab-list:hover { transform: scale(1.1); }
+
+        .dice-result-crit { color: #4ade80; text-shadow: 0 0 10px #22c55e; }
+        .dice-result-fumble { color: #f87171; text-shadow: 0 0 10px #ef4444; }
+        .dice-anim { animation: rollDiceAnim 0.5s ease-out; }
+        @keyframes rollDiceAnim { 0% { transform: rotate(0deg) scale(0.5); } 100% { transform: rotate(360deg) scale(1); } }
+
+        /* Full Sheet Styles (Copiado do Player) */
+        .bar-container { background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); position: relative; }
+        .bar-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 0.6rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
+        .hp-fill { background: linear-gradient(90deg, #991b1b, #ef4444); }
+        .ether-fill { background: linear-gradient(90deg, #1e3a8a, #3b82f6); }
+        .destino-fill { background: linear-gradient(90deg, #ca8a04, #facc15); }
+        .html-content strong { color: #818cf8; } .html-content b { color: #f472b6; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen p-4 flex flex-col items-center">
+
+    <!-- HEADER -->
+    <header class="w-full max-w-6xl mb-6 flex justify-between items-center border-b border-gray-700 pb-4 sticky top-0 bg-gray-900 z-30 pt-2">
+        <div class="flex items-center gap-4">
+             <!-- LOGO PEQUENA -->
+            <div class="h-10 w-auto overflow-hidden flex items-center">
+                 <span class="text-xl font-bold text-yellow-600 rpg-font tracking-widest border border-yellow-600/30 px-2 rounded bg-black/40">TELUMAK</span>
+            </div>
+            <h1 class="text-xl font-bold text-slate-300 hidden md:block">| Painel do GM</h1>
+            
+            <button id="btnSalvar" onclick="sincronizarTudo()" class="hidden bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded font-bold shadow-lg animate-pulse transition flex items-center gap-2 ml-4">
+                <i class="fas fa-save"></i> SALVAR (<span id="countMudancas">0</span>)
+            </button>
+        </div>
+        
+        <div class="flex gap-4 items-center">
+            <button onclick="init()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-white transition border border-gray-600">
+                <i class="fas fa-sync-alt mr-1"></i> Recarregar
+            </button>
+            <button onclick="logout()" class="text-xs bg-red-900/50 hover:bg-red-900 px-3 py-1 rounded text-red-200 transition border border-red-800" title="Sair">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- BARRA DE ADICIONAR AO GRID -->
+    <div class="w-full max-w-6xl bg-gray-800 p-4 rounded-xl border border-gray-700 shadow-lg mb-6 flex gap-4 items-center">
+        <div class="flex-1">
+            <select id="charSelect" class="w-full bg-gray-900 text-white border border-gray-600 rounded p-2 focus:outline-none focus:border-yellow-500 transition text-sm">
+                <option value="">Carregando lista...</option>
+            </select>
+        </div>
+        <button onclick="adicionarAoGrid()" class="bg-yellow-700 hover:bg-yellow-600 text-white px-4 py-2 rounded font-bold text-sm transition">
+            <i class="fas fa-plus mr-1"></i> Adicionar à Mesa
+        </button>
+    </div>
+
+    <!-- GRID DE COMBATE (MESA) -->
+    <div id="gridMesa" class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
+        <div class="col-span-full text-center text-gray-600 py-10 italic">Nenhum personagem na mesa de combate.</div>
+    </div>
+
+
+    <!-- ======================= -->
+    <!-- MODAIS E FLUTUANTES -->
+    <!-- ======================= -->
+
+    <!-- FAB 1: LISTA COMPLETA (GRIMÓRIO) - Canto Superior Direito -->
+    <button onclick="toggleCharListModal()" class="fab-list bg-slate-700 hover:bg-slate-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-2 border-slate-500" title="Grimório (Todos os Personagens)">
+        <i class="fas fa-scroll text-yellow-500"></i>
+    </button>
+
+    <!-- FAB 2: DADOS - Canto Inferior Direito -->
+    <button onclick="toggleDiceModal()" class="fab-dice bg-yellow-700 hover:bg-yellow-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl border-4 border-slate-800" title="Rolador de Dados">
+        <i class="fas fa-dice-d20"></i>
+    </button>
+
+
+    <!-- MODAL 1: LISTA DE PERSONAGENS -->
+    <div id="charListModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
+        <div class="bg-gray-800 w-full max-w-sm rounded-xl shadow-2xl border border-gray-600 p-6 relative max-h-[80vh] flex flex-col">
+            <button onclick="toggleCharListModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+            <h3 class="text-yellow-500 font-bold text-xl mb-4 text-center border-b border-gray-700 pb-2">Grimório Completo</h3>
+            <div id="fullCharList" class="overflow-y-auto custom-scroll space-y-2 flex-1">
+                <!-- Preenchido via JS -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 2: FICHA COMPLETA (VISUALIZAÇÃO) -->
+    <div id="fullSheetModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] fade-in p-2 md:p-8 overflow-y-auto">
+        <div class="bg-slate-900 w-full max-w-4xl rounded-xl shadow-2xl border border-yellow-600 relative flex flex-col my-auto">
+            
+            <!-- Header Modal -->
+            <div class="p-4 bg-slate-800 rounded-t-xl border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <span class="text-yellow-600 font-bold text-lg rpg-font">Ficha Completa</span>
+                    <span id="fsName" class="text-white font-bold text-xl">...</span>
+                </div>
+                <button onclick="closeFullSheet()" class="text-gray-400 hover:text-red-500 bg-slate-900 px-3 py-1 rounded border border-slate-700"><i class="fas fa-times fa-lg"></i> Fechar</button>
+            </div>
+
+            <!-- Corpo da Ficha (Igual ao Player) -->
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <!-- Status -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Vida</span><span id="fsHpTxt" class="text-white font-mono text-xs">0/0</span></div>
+                        <div class="bar-container"><div id="fsHpBar" class="bar-fill hp-fill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Éter</span><span id="fsEthTxt" class="text-white font-mono text-xs">0/0</span></div>
+                        <div class="bar-container"><div id="fsEthBar" class="bar-fill ether-fill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Destino</span><span id="fsDesTxt" class="text-white font-mono text-xs">0/0</span></div>
+                        <div class="bar-container"><div id="fsDesBar" class="bar-fill destino-fill" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Imagem -->
+                    <div class="md:col-span-1">
+                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden border border-slate-700 bg-black">
+                            <img id="fsImage" src="" class="w-full h-full object-cover">
+                            <div class="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-yellow-500 border border-yellow-500/30" id="fsLevel">Lvl ?</div>
+                        </div>
+                    </div>
+                    <!-- Atributos -->
+                    <div class="md:col-span-2 space-y-4">
+                        <div class="grid grid-cols-4 gap-2 text-center">
+                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">FIS</div><div id="fsFis" class="text-xl font-bold text-white">0</div></div>
+                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">DES</div><div id="fsDes" class="text-xl font-bold text-white">0</div></div>
+                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">COG</div><div id="fsCog" class="text-xl font-bold text-white">0</div></div>
+                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">CAR</div><div id="fsCar" class="text-xl font-bold text-white">0</div></div>
+                        </div>
+                        <div class="bg-indigo-900/20 border border-indigo-500/30 p-2 rounded flex justify-between px-4">
+                            <span class="text-xs text-indigo-400 font-bold uppercase">Primórdio</span><span id="fsPrim" class="text-xl font-bold text-indigo-300">0</span>
+                        </div>
+                        <!-- Ferramentas -->
+                         <div class="bg-slate-900/50 rounded-lg border border-slate-700 p-2">
+                            <h4 class="text-[10px] text-slate-500 uppercase font-bold mb-1">Ferramentas</h4>
+                            <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">FIS</span><span id="fsToolFis" class="text-green-400 font-mono">+0</span></div>
+                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">DES</span><span id="fsToolDes" class="text-green-400 font-mono">+0</span></div>
+                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">COG</span><span id="fsToolCog" class="text-green-400 font-mono">+0</span></div>
+                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">CAR</span><span id="fsToolCar" class="text-green-400 font-mono">+0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo HTML -->
+                <div class="mt-6 space-y-6">
+                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h3 class="text-indigo-400 font-bold border-b border-slate-700 mb-2 pb-1">Ataques</h3>
+                        <div id="fsHtmlAtaques" class="html-content text-sm text-slate-300 text-sm"></div>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Dons & Poderes</h3>
+                        <div id="fsHtmlDons" class="html-content text-sm text-slate-300 text-sm"></div>
+                    </div>
+                     <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Equipamento</h3>
+                        <div id="fsHtmlEquip" class="html-content text-sm text-slate-300 text-sm"></div>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
+                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Defesa & Reação</h3>
+                        <div id="fsHtmlDefesa" class="html-content text-sm text-slate-300 text-sm"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 3: EDITOR DE TEXTO (Mantido) -->
+    <div id="textEditorModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
+        <div class="bg-gray-800 w-full max-w-2xl rounded-xl shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900 rounded-t-xl">
+                <h2 class="text-lg font-bold text-yellow-500"><i class="fas fa-edit mr-2"></i>Editar: <span id="modalCharName" class="text-white">...</span></h2>
+                <button onclick="fecharEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6 flex-1 custom-scroll" id="editorBody"></div>
+            <div class="p-4 border-t border-gray-700 bg-gray-900 rounded-b-xl flex justify-end gap-3">
+                <button onclick="fecharEditor()" class="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 transition">Cancelar</button>
+                <button onclick="salvarEdicoesTexto()" class="px-6 py-2 rounded bg-yellow-700 hover:bg-yellow-600 text-white font-bold shadow-lg transition">
+                    <i class="fas fa-check mr-2"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DADOS (Igual Player) -->
+    <div id="diceModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
+        <div class="bg-slate-800 w-full max-w-md rounded-xl shadow-2xl border border-slate-600 p-6 relative">
+            <button onclick="toggleDiceModal()" class="absolute top-2 right-2 text-slate-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
+            <h3 class="text-yellow-500 font-bold text-xl mb-4 text-center"><i class="fas fa-dice mr-2"></i>Rolador TELUMAK</h3>
+            <div class="bg-slate-900 p-6 rounded-lg mb-4 text-center border border-slate-700 min-h-[120px] flex flex-col justify-center items-center relative overflow-hidden">
+                <i id="diceIconAnim" class="fas fa-dice-d20 text-6xl text-slate-700 absolute opacity-20"></i>
+                <div id="diceResultMain" class="text-5xl font-black text-white relative z-10">-</div>
+                <div id="diceResultDetail" class="text-sm text-slate-400 mt-2 relative z-10">Clique em um dado</div>
+            </div>
+            <form onsubmit="rollCustom(event)" class="flex gap-2 mb-4">
+                <input type="text" id="customRoll" placeholder="/roll 1d20+5" class="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none text-sm font-mono">
+                <button type="submit" class="bg-yellow-700 hover:bg-yellow-600 px-4 rounded text-white font-bold"><i class="fas fa-paper-plane"></i></button>
+            </form>
+            <div class="grid grid-cols-4 gap-2 mb-4">
+                <button onclick="rollDice(20)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D20</button>
+                <button onclick="rollDice(12)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D12</button>
+                <button onclick="rollDice(10)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D10</button>
+                <button onclick="rollDice(8)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D8</button>
+                <button onclick="rollDice(6)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D6</button>
+                <button onclick="rollDice(4)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D4</button>
+                <button onclick="rollDice(100)" class="col-span-2 bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D100</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="globalLog" class="hidden fixed bottom-4 right-4 bg-gray-800 border border-gray-600 px-4 py-2 rounded shadow-xl text-xs z-50"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbz60xAy9ENu9WhfoBSJPHfpbJNc0N9FoxUP1h4O0DUIYtUIDDksWZHrAonWBDMxqfLQVg/exec";
+
+        // CAMPOS PARA EDIÇÃO RÁPIDA
+        const COL_HP = "hp_atual"; const COL_ETHER = "ether_atual"; const COL_DESTINO = "destino_atual";
+        const COL_TOOL_FIS = "ferramenta_fisico"; const COL_TOOL_DES = "ferramenta_destreza";
+        const COL_TOOL_COG = "ferramenta_cognicao"; const COL_TOOL_CAR = "ferramenta_carisma";
+
+        const CAMPOS_TEXTO = [
+            { id: 'html_ataques', label: 'Ataques & Técnicas', icon: 'fa-fist-raised' },
+            { id: 'html_defesa', label: 'Defesa & Reação', icon: 'fa-shield-alt' },
+            { id: 'html_dons', label: 'Dons & Poderes', icon: 'fa-magic' },
+            { id: 'html_equipamentos', label: 'Equipamentos', icon: 'fa-tshirt' }
+        ];
+
+        let todosDados = []; 
+        let personagensNaMesa = [];
+        let filaDeMudancas = {}; 
+        let editorCharIndex = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = localStorage.getItem('moger_session');
+            if (session) {
+                const data = JSON.parse(session);
+                const now = new Date().getTime();
+                if (data.role === 'GM' && now < data.expiry) {
+                    init();
+                } else {
+                    alert("Acesso expirado.");
+                    window.location.href = 'index.html';
+                }
+            } else {
+                alert("Acesso restrito a GMs.");
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function init() {
+            try {
+                mostrarLog("Sincronizando...", "text-yellow-500");
+                const response = await fetch(API_URL);
+                todosDados = await response.json();
+                
+                // Popula Select da Mesa
+                const select = document.getElementById('charSelect');
+                select.innerHTML = '<option value="">-- Adicionar à Mesa --</option>';
+                
+                // Popula Lista do Grimório (Modal)
+                const fullList = document.getElementById('fullCharList');
+                fullList.innerHTML = '';
+
+                todosDados.forEach((char, index) => {
+                    const nome = char.nome || "Sem Nome";
+                    
+                    // Select Mesa
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    opt.innerText = nome;
+                    select.appendChild(opt);
+
+                    // Lista Grimório
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left bg-slate-700 hover:bg-slate-600 p-3 rounded flex justify-between items-center border border-slate-600";
+                    btn.onclick = () => openFullSheet(index);
+                    btn.innerHTML = `
+                        <span class="font-bold text-white">${nome}</span>
+                        <span class="text-xs text-yellow-500">Lvl ${char.nivel || 0}</span>
+                    `;
+                    fullList.appendChild(btn);
+                });
+
+                mostrarLog("Dados Atualizados", "text-green-500");
+                filaDeMudancas = {};
+                atualizarBotaoSalvar();
+                renderizarGrid();
+            } catch (error) {
+                console.error("Erro no init:", error);
+                mostrarLog("Erro ao carregar dados.", "text-red-500");
+            }
+        }
+
+        // --- SISTEMA DE DADOS (Igual Player) ---
+        function toggleDiceModal() {
+            const m = document.getElementById('diceModal');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+            document.getElementById('diceResultMain').innerText = "-";
+            document.getElementById('diceResultDetail').innerText = "Clique em um dado";
+            document.getElementById('diceIconAnim').classList.remove('fa-spin');
+        }
+        function rollCustom(e) { e.preventDefault(); parseAndRoll(document.getElementById('customRoll').value.replace('/roll', '').trim()); }
+        function rollDice(faces) { parseAndRoll(`1d${faces}`); }
+        function parseAndRoll(expr) {
+            const main = document.getElementById('diceResultMain');
+            const icon = document.getElementById('diceIconAnim');
+            main.className = "text-5xl font-black text-white relative z-10 dice-anim";
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+                const match = expr.match(/^(\d*)d(\d+)([\+\-]\d+)?$/i);
+                if (!match) { main.innerText = "?"; icon.classList.remove('fa-spin'); return; }
+                const count = parseInt(match[1]) || 1;
+                const faces = parseInt(match[2]);
+                const mod = parseInt(match[3]) || 0;
+                let total = 0, rolls = [], isCrit = false, isFumble = false;
+                for(let i=0; i<count; i++) {
+                    const r = Math.floor(Math.random() * faces) + 1;
+                    rolls.push(r); total += r;
+                    if (faces === 20 && i === 0) { if (r === 20) isCrit = true; if (r === 1) isFumble = true; }
+                }
+                total += mod;
+                icon.classList.remove('fa-spin');
+                main.innerText = total;
+                let details = `[${rolls.join('+')}]` + (mod !== 0 ? (mod > 0 ? ` +${mod}` : ` ${mod}`) : "");
+                if (isCrit) { main.className += " dice-result-crit"; details += " CRÍTICO!"; }
+                else if (isFumble) { main.className += " dice-result-fumble"; details += " FALHA!"; }
+                document.getElementById('diceResultDetail').innerText = details;
+            }, 400);
+        }
+
+
+        // --- SISTEMA DE VISUALIZAÇÃO COMPLETA (Grimório) ---
+        function toggleCharListModal() {
+            const m = document.getElementById('charListModal');
+            m.classList.toggle('hidden'); m.classList.toggle('flex');
+        }
+
+        function openFullSheet(index) {
+            const char = todosDados[index];
+            const modal = document.getElementById('fullSheetModal');
+            
+            // Popula os dados
+            document.getElementById('fsName').innerText = char.nome;
+            document.getElementById('fsLevel').innerText = "Lvl " + (char.nivel || 0);
+            
+            // Barras
+            const updateFsBar = (idBar, idTxt, val, max) => {
+                const pct = Math.min(100, Math.max(0, (val/max)*100));
+                document.getElementById(idTxt).innerText = `${val}/${max}`;
+                document.getElementById(idBar).style.width = `${pct}%`;
+            };
+            updateFsBar('fsHpBar', 'fsHpTxt', char.hp_atual, char.hp_max);
+            updateFsBar('fsEthBar', 'fsEthTxt', char.ether_atual, char.ether_max);
+            updateFsBar('fsDesBar', 'fsDesTxt', char.destino_atual, char.destino_max);
+
+            // Imagem Inteligente
+            const hpPct = (char.hp_atual / char.hp_max) * 100;
+            let img = char.img_saudavel;
+            if (hpPct < 25) img = char.img_muito_ferido || char.img_ferido || char.img_saudavel;
+            else if (hpPct < 50) img = char.img_ferido || char.img_saudavel;
+            document.getElementById('fsImage').src = img || 'https://via.placeholder.com/300';
+
+            // Atributos
+            document.getElementById('fsFis').innerText = char.fisico || 0;
+            document.getElementById('fsDes').innerText = char.destreza || 0;
+            document.getElementById('fsCog').innerText = char.cognicao || 0;
+            document.getElementById('fsCar').innerText = char.carisma || 0;
+            document.getElementById('fsPrim').innerText = char.primordio || 0;
+
+            // Ferramentas
+            document.getElementById('fsToolFis').innerText = "+" + (char.ferramenta_fisico || 0);
+            document.getElementById('fsToolDes').innerText = "+" + (char.ferramenta_destreza || 0);
+            document.getElementById('fsToolCog').innerText = "+" + (char.ferramenta_cognicao || 0);
+            document.getElementById('fsToolCar').innerText = "+" + (char.ferramenta_carisma || 0);
+
+            // HTMLs
+            const setFsHtml = (id, content) => {
+                document.getElementById(id).innerHTML = content ? content.replace(/\n/g, "<br>") : "<em class='text-gray-600'>Vazio</em>";
+            };
+            setFsHtml('fsHtmlAtaques', char.html_ataques);
+            setFsHtml('fsHtmlDons', char.html_dons);
+            setFsHtml('fsHtmlEquip', char.html_equipamentos);
+            setFsHtml('fsHtmlDefesa', char.html_defesa);
+
+            // Fecha lista e abre ficha
+            document.getElementById('charListModal').classList.add('hidden');
+            document.getElementById('charListModal').classList.remove('flex');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeFullSheet() {
+            document.getElementById('fullSheetModal').classList.add('hidden');
+            document.getElementById('fullSheetModal').classList.remove('flex');
+        }
+
+
+        // --- GRID / MESA (Mantido) ---
+        function renderizarGrid() {
+            const container = document.getElementById('gridMesa');
+            if (personagensNaMesa.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-600 py-10 italic">Nenhum personagem na mesa de combate.</div>';
+                return;
+            }
+            container.innerHTML = '';
+
+            personagensNaMesa.forEach(indexChar => {
+                const char = todosDados[indexChar];
+                const getValor = (campo) => {
+                    const chave = `${indexChar}-${campo}`;
+                    if (filaDeMudancas.hasOwnProperty(chave)) return filaDeMudancas[chave];
+                    return parseInt(char[campo] || 0);
+                };
+                const check = (campo) => {
+                    const chave = `${indexChar}-${campo}`;
+                    return filaDeMudancas.hasOwnProperty(chave) ? 'nao-salvo' : 'text-white';
+                };
+
+                const hpAtual = parseInt(char.hp_atual || 0);
+                const hpMax = parseInt(char.hp_max || 1);
+                const pct = (hpAtual / hpMax) * 100;
+                let img = char.img_saudavel;
+                if(pct < 25) img = char.img_muito_ferido || char.img_saudavel;
+                else if(pct < 50) img = char.img_ferido || char.img_saudavel;
+                if(!img) img = 'https://via.placeholder.com/50';
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 rounded-lg border border-gray-700 p-3 shadow-lg fade-in relative flex flex-col h-[420px]"; 
+                card.innerHTML = `
+                    <button onclick="removerDoGrid('${indexChar}')" class="absolute top-2 right-2 text-gray-600 hover:text-red-500 z-10"><i class="fas fa-times"></i></button>
+                    <div class="flex items-center gap-3 mb-3 shrink-0 cursor-pointer" onclick="openFullSheet(${indexChar})">
+                        <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600">
+                             <img src="${img}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-white text-sm leading-tight truncate mr-2">${char.nome || "..."}</h3>
+                            </div>
+                            <p class="text-[10px] text-gray-400">Lvl ${char.nivel || 0} • ${char.cla || "?"}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 overflow-y-auto card-scroll pr-1 flex-1">
+                        <div class="pb-2 border-b border-gray-700 mb-2">
+                             <div class="flex justify-between items-center mb-1">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase">Vitais</p>
+                                <button onclick="abrirEditor('${indexChar}')" class="text-[10px] text-yellow-500 hover:text-white"><i class="fas fa-pen"></i> Editar Texto</button>
+                            </div>
+                            ${criarLinha(indexChar, COL_HP, 'HP', 'text-red-400', 'bg-red-900', getValor(COL_HP), check(COL_HP))}
+                            ${criarLinha(indexChar, COL_ETHER, 'Éter', 'text-blue-400', 'bg-blue-900', getValor(COL_ETHER), check(COL_ETHER))}
+                            ${criarLinha(indexChar, COL_DESTINO, 'Dest.', 'text-purple-400', 'bg-purple-900', getValor(COL_DESTINO), check(COL_DESTINO))}
+                        </div>
+                         <div>
+                            <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Ferramentas</p>
+                            ${criarLinha(indexChar, COL_TOOL_FIS, 'Físico', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_FIS), check(COL_TOOL_FIS))}
+                            ${criarLinha(indexChar, COL_TOOL_DES, 'Des.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_DES), check(COL_TOOL_DES))}
+                            ${criarLinha(indexChar, COL_TOOL_COG, 'Cog.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_COG), check(COL_TOOL_COG))}
+                            ${criarLinha(indexChar, COL_TOOL_CAR, 'Car.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_CAR), check(COL_TOOL_CAR))}
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function criarLinha(idx, campo, label, txtColor, bgColor, valor, classeExtra) {
+            return `
+            <div class="flex justify-between items-center bg-gray-900/50 rounded px-2 py-1 mb-1">
+                <span class="text-xs font-bold ${txtColor} w-10 truncate" title="${label}">${label}</span>
+                <span id="val-${idx}-${campo}" class="font-mono font-bold text-sm ${classeExtra}">${valor}</span>
+                <div class="flex gap-1">
+                    <button onclick="alterarLocal('${idx}', '${campo}', -1)" class="w-6 h-6 flex items-center justify-center ${bgColor} text-white/80 rounded text-xs hover:brightness-110">-</button>
+                    <button onclick="alterarLocal('${idx}', '${campo}', 1)" class="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded text-xs hover:bg-gray-600">+</button>
+                </div>
+            </div>`;
+        }
+        function adicionarAoGrid() {
+            const select = document.getElementById('charSelect');
+            const index = select.value;
+            if (index === "" || personagensNaMesa.includes(index)) return;
+            personagensNaMesa.push(index);
+            renderizarGrid();
+        }
+        function removerDoGrid(idx) { personagensNaMesa = personagensNaMesa.filter(i => i !== idx); renderizarGrid(); }
+        function alterarLocal(index, campo, delta) {
+            const chave = `${index}-${campo}`;
+            const char = todosDados[index];
+            let valorAtual = filaDeMudancas.hasOwnProperty(chave) ? filaDeMudancas[chave] : parseInt(char[campo] || 0);
+            let novo = valorAtual + delta;
+            filaDeMudancas[chave] = novo;
+            if (novo === parseInt(char[campo] || 0)) delete filaDeMudancas[chave];
+            renderizarGrid(); atualizarBotaoSalvar();
+        }
+        function atualizarBotaoSalvar() {
+            const qtd = Object.keys(filaDeMudancas).length;
+            const btn = document.getElementById('btnSalvar');
+            if (qtd > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); btn.innerHTML = `<i class="fas fa-save"></i> SALVAR (${qtd})`; } 
+            else { btn.classList.add('hidden'); btn.classList.remove('flex'); }
+        }
+        function mostrarLog(msg, colorClass) {
+            const log = document.getElementById('globalLog');
+            log.innerText = msg;
+            log.className = `fixed bottom-4 right-4 bg-gray-800 border border-gray-600 px-4 py-2 rounded shadow-xl text-xs z-50 ${colorClass}`;
+            log.classList.remove('hidden');
+            setTimeout(() => { log.classList.add('hidden'); }, 3000);
+        }
+        function logout() { localStorage.removeItem('moger_session'); window.location.href = 'index.html'; }
+
+
+        // EDITOR (Mantido)
+        function abrirEditor(index) {
+            editorCharIndex = index;
+            const char = todosDados[index];
+            document.getElementById('modalCharName').innerText = char.nome;
+            const body = document.getElementById('editorBody');
+            body.innerHTML = '';
+            CAMPOS_TEXTO.forEach(c => {
+                const chave = `${index}-${c.id}`;
+                const val = filaDeMudancas[chave] || char[c.id] || "";
+                body.innerHTML += `
+                    <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
+                        <label class="block text-sm font-bold text-gray-400 mb-2 uppercase"><i class="fas ${c.icon}"></i> ${c.label}</label>
+                        <div class="flex gap-1 mb-2 border-b border-gray-700 pb-2">
+                             <button class="toolbar-btn" onclick="document.execCommand('bold')">B</button>
+                             <button class="toolbar-btn" onclick="document.execCommand('italic')">I</button>
+                        </div>
+                        <div id="editor-${c.id}" class="editor-content" contenteditable="true">${val}</div>
+                    </div>`;
+            });
+            document.getElementById('textEditorModal').classList.remove('hidden');
+            document.getElementById('textEditorModal').classList.add('flex');
+        }
+        function fecharEditor() { document.getElementById('textEditorModal').classList.add('hidden'); document.getElementById('textEditorModal').classList.remove('flex'); }
+        function salvarEdicoesTexto() {
+            CAMPOS_TEXTO.forEach(c => {
+                const el = document.getElementById(`editor-${c.id}`);
+                if (el) {
+                    const novo = el.innerHTML;
+                    const original = todosDados[editorCharIndex][c.id] || "";
+                    if (novo !== original) filaDeMudancas[`${editorCharIndex}-${c.id}`] = novo;
+                }
+            });
+            fecharEditor(); atualizarBotaoSalvar(); mostrarLog("Textos prontos para salvar", "text-blue-400");
+        }
+        async function sincronizarTudo() {
+            const btn = document.getElementById('btnSalvar');
+            btn.innerHTML = 'SALVANDO...'; btn.disabled = true;
+            const chaves = Object.keys(filaDeMudancas);
+            let erros = 0;
+            for (const k of chaves) {
+                const [idx, campo] = k.split('-');
+                const char = todosDados[idx];
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ nome: char.nome, campo: campo, valor: filaDeMudancas[k] })
+                    });
+                    const json = await res.json();
+                    if(json.status === "SUCESSO") {
+                        todosDados[idx][campo] = json.novoValor;
+                        delete filaDeMudancas[k];
+                    } else erros++;
+                } catch(e) { erros++; }
+            }
+            renderizarGrid(); atualizarBotaoSalvar();
+            if(erros > 0) mostrarLog(`Erro ao salvar ${erros} itens`, "text-red-500");
+            else mostrarLog("Tudo salvo!", "text-green-500");
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>
