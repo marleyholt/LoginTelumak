@@ -19,10 +19,33 @@
         /* Barras */
         .bar-container { background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); position: relative; }
         .bar-fill { height: 100%; transition: width 0.5s ease-in-out; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 0.7rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
-        .hp-fill { background: linear-gradient(90deg, #991b1b, #ef4444); }
-        .ether-fill { background: linear-gradient(90deg, #1e3a8a, #3b82f6); }
-        .destino-fill { background: linear-gradient(90deg, #ca8a04, #facc15); }
-
+        /* Efeito de Brilho Interno e Externo nas Barras */
+        .hp-fill { 
+        background: linear-gradient(90deg, #7f1d1d, #ef4444); 
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+        }
+        .ether-fill { 
+        background: linear-gradient(90deg, #1e3a8a, #3b82f6); 
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+        }
+        .destino-fill { 
+        background: linear-gradient(90deg, #a16207, #facc15); 
+        box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+        }
+        /* Ajuste no container da barra para ser arredondado (cápsula) */
+        .bar-track {
+        background-color: #0f172a; /* Slate 900 */
+        border: 1px solid #334155; /* Slate 700 */
+        border-radius: 9999px; /* Pill shape */
+        overflow: hidden;
+        height: 12px; /* Barra mais fina e elegante */
+        position: relative;
+        }
+        /* ... (mantenha os anteriores hp, ether, destino) ... */
+        .alcance-fill { background: linear-gradient(90deg, #059669, #34d399); }   /* Verde Esmeralda */
+        .movimento-fill { background: linear-gradient(90deg, #0891b2, #22d3ee); } /* Ciano */
+        .fortitude-fill { background: linear-gradient(90deg, #7c3aed, #a78bfa); } /* Roxo Violeta */
+        
         /* Conteúdo Rico */
         .html-content strong { color: #818cf8; } .html-content b { color: #f472b6; }
 
@@ -34,6 +57,37 @@
         .dice-result-fumble { color: #f87171; text-shadow: 0 0 10px #ef4444; }
         .dice-anim { animation: rollDiceAnim 0.5s ease-out; }
         @keyframes rollDiceAnim { 0% { transform: rotate(0deg) scale(0.5); } 100% { transform: rotate(360deg) scale(1); } }
+        
+        /* Animação de Tremor (Caos antes da ordem) */
+@keyframes chaosShake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.rolling-chaos {
+    animation: chaosShake 0.1s infinite;
+    color: #94a3b8; /* Slate 400 - cor neutra enquanto rola */
+}
+
+/* Resultado Final - Efeito de Impacto */
+.result-pop {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -55,7 +109,7 @@
             
             <i id="logo-fallback" class="fas fa-dragon text-6xl text-yellow-600 mb-4 hidden animate-pulse"></i>
 
-            <h1 class="text-3xl text-yellow-600 font-bold mb-1 rpg-font tracking-widest">TELUMAK</h1>
+            <h1 class="text-3xl text-yellow-600 font-bold mb-1 rpg-font tracking-widest">TELUMAK RPG</h1>
             <p class="text-slate-400 text-sm mb-8">Acesso ao Grimório Digital</p>
 
             <form id="loginForm" onsubmit="handleLogin(event)" class="w-full">
@@ -82,7 +136,7 @@
         <nav class="bg-slate-900 border-b border-slate-800 p-3 sticky top-0 z-40 shadow-lg flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="h-10 w-auto overflow-hidden flex items-center">
-                    <span class="text-xl font-bold text-yellow-600 rpg-font tracking-widest border border-yellow-600/30 px-2 rounded bg-black/40">TELUMAK</span>
+                    <span class="text-xl font-bold text-yellow-600 rpg-font tracking-widest border border-yellow-600/30 px-2 rounded bg-black/40">TELUMAK RPG</span>
                 </div>
                 <div class="h-8 w-px bg-slate-700 mx-1"></div>
                 <div>
@@ -104,27 +158,107 @@
                 <i class="fas fa-sync-alt fa-spin mr-2"></i> ATUALIZAÇÃO DISPONÍVEL!
             </div>
 
-            <!-- Status -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-lg">
-                    <div class="flex justify-between items-end mb-1"><span class="text-slate-300 font-bold text-xs"><i class="fas fa-heart text-red-500 mr-1"></i> Vida</span><span id="hpText" class="text-white font-mono text-sm">0/0</span></div>
-                    <div class="bar-container"><div id="hpBar" class="bar-fill hp-fill" style="width: 0%"></div></div>
-                </div>
-                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-lg">
-                    <div class="flex justify-between items-end mb-1"><span class="text-slate-300 font-bold text-xs"><i class="fas fa-bolt text-blue-500 mr-1"></i> Éter</span><span id="etherText" class="text-white font-mono text-sm">0/0</span></div>
-                    <div class="bar-container"><div id="etherBar" class="bar-fill ether-fill" style="width: 0%"></div></div>
-                </div>
-                <div class="bg-slate-800 p-3 rounded-xl border border-slate-700 shadow-lg">
-                    <div class="flex justify-between items-end mb-1"><span class="text-slate-300 font-bold text-xs"><i class="fas fa-star text-yellow-500 mr-1"></i> Destino</span><span id="destinoText" class="text-white font-mono text-sm">0/0</span></div>
-                    <div class="bar-container"><div id="destinoBar" class="bar-fill destino-fill" style="width: 0%"></div></div>
-                </div>
+            <!-- Status TESTE-->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    
+    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group hover:border-red-900/50 transition duration-500">
+        <div class="flex justify-between items-end mb-2">
+            <span class="text-red-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2">
+                <i class="fas fa-heart animate-pulse"></i> Saúde 
+            </span>
+            <span id="hpText" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">0/0</span>
+        </div>
+        
+        <div class="bar-track">
+            <div id="hpBar" class="h-full hp-fill transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group hover:border-blue-900/50 transition duration-500">
+        <div class="flex justify-between items-end mb-2">
+            <span class="text-blue-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2">
+                <i class="fas fa-bolt"></i> Energia
+            </span>
+            <span id="etherText" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">0/0</span>
+        </div>
+        
+        <div class="bar-track">
+            <div id="etherBar" class="h-full ether-fill transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group hover:border-yellow-900/50 transition duration-500">
+        <div class="flex justify-between items-end mb-2">
+            <span class="text-yellow-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2">
+                <i class="fas fa-star spin-slow"></i> Poder
+            </span>
+            <span id="destinoText" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">0/0</span>
+        </div>
+        
+        <div class="bar-track">
+            <div id="destinoBar" class="h-full destino-fill transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+    </div>
+
+</div>
+            <!--MARCADORES TESTE-->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6"> 
+    
+    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition duration-500">
+        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-bullseye text-emerald-500 text-sm drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]"></i>
+                <span class="text-slate-400 text-xs font-bold tracking-[0.2em]">ALCANCE</span>
             </div>
+            <span id="alcanceNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+        </div>
+        
+        <div class="w-full bg-slate-900/40 border border-emerald-500/20 rounded-lg py-4 text-center relative overflow-hidden group-hover:bg-emerald-900/10 transition duration-500">
+            <span id="alcanceDetalhe" class="text-2xl font-black text-emerald-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]">
+                0m
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)] transition duration-500">
+        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-running text-cyan-500 text-sm drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i>
+                <span class="text-slate-400 text-xs font-bold tracking-[0.2em]">MOVIMENTO</span>
+            </div>
+            <span id="movimentoNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+        </div>
+        
+        <div class="w-full bg-slate-900/40 border border-cyan-500/20 rounded-lg py-4 text-center relative overflow-hidden group-hover:bg-cyan-900/10 transition duration-500">
+            <span id="movimentoDetalhe" class="text-xl font-black text-cyan-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+                0m Ação
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group hover:border-violet-500 hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition duration-500">
+        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-shield-alt text-violet-500 text-sm drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]"></i>
+                <span class="text-slate-400 text-xs font-bold tracking-[0.2em]">FORTITUDE</span>
+            </div>
+            <span id="fortitudeNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+        </div>
+        
+        <div class="w-full bg-slate-900/40 border border-violet-500/20 rounded-lg py-4 text-center relative overflow-hidden group-hover:bg-violet-900/10 transition duration-500">
+            <span id="fortitudeDetalhe" class="text-2xl font-black text-violet-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(167,139,250,0.6)]">
+                0 Kg
+            </span>
+        </div>
+    </div>
+
+</div>
 
             <!-- Imagem e Atributos -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Imagem -->
                 <div class="md:col-span-1">
-                    <div class="relative aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700 group bg-black">
+                    <div class="relative aspect-[10/17] rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700 group bg-black">
                         <img id="charImage" src="" 
                              onerror="this.src='https://via.placeholder.com/300x400?text=Link+Quebrado'; this.onerror=null;"
                              alt="Personagem" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
@@ -135,57 +269,76 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Atributos teste-->
+                 <div class="md:col-span-2 flex flex-col gap-4">
+    
+    <div class="grid grid-cols-2 gap-3">
+        
+        <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative group hover:border-slate-500 transition duration-500">
+            <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition duration-500 rounded-xl"></div>
+            
+            <span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Físico</span>
+            <span id="attrFisico" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span>
+        </div>
 
-                <!-- Atributos -->
-                <div class="md:col-span-2 flex flex-col gap-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-slate-800 p-3 rounded border border-slate-700 flex flex-col items-center justify-center">
-                            <span class="text-slate-400 text-[10px] uppercase tracking-widest mb-1">Físico</span>
-                            <span id="attrFisico" class="text-3xl font-bold text-white">0</span>
-                        </div>
-                        <div class="bg-slate-800 p-3 rounded border border-slate-700 flex flex-col items-center justify-center">
-                            <span class="text-slate-400 text-[10px] uppercase tracking-widest mb-1">Destreza</span>
-                            <span id="attrDestreza" class="text-3xl font-bold text-white">0</span>
-                        </div>
-                        <div class="bg-slate-800 p-3 rounded border border-slate-700 flex flex-col items-center justify-center">
-                            <span class="text-slate-400 text-[10px] uppercase tracking-widest mb-1">Cognição</span>
-                            <span id="attrCognicao" class="text-3xl font-bold text-white">0</span>
-                        </div>
-                        <div class="bg-slate-800 p-3 rounded border border-slate-700 flex flex-col items-center justify-center">
-                            <span class="text-slate-400 text-[10px] uppercase tracking-widest mb-1">Carisma</span>
-                            <span id="attrCarisma" class="text-3xl font-bold text-white">0</span>
-                        </div>
-                        <div class="col-span-2 bg-indigo-900/30 p-2 rounded border border-indigo-500/30 flex justify-between items-center px-4">
-                            <span class="text-indigo-300 text-xs uppercase font-bold tracking-widest">Primórdio</span>
-                            <span id="attrPrimordio" class="text-2xl font-bold text-indigo-400">0</span>
-                        </div>
-                    </div>
+        <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative group hover:border-slate-500 transition duration-500">
+            <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition duration-500 rounded-xl"></div>
+            
+            <span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Destreza</span>
+            <span id="attrDestreza" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span>
+        </div>
 
-                    <!-- Ferramentas de Combate -->
-                    <div class="bg-slate-900/50 rounded-lg border border-slate-700 p-3">
-                        <h4 class="text-[10px] text-slate-500 uppercase font-bold mb-2 border-b border-slate-700 pb-1 flex items-center">
-                            <i class="fas fa-tools mr-1"></i> Ferramentas de Combate
-                        </h4>
-                        <div class="grid grid-cols-4 gap-2 text-center">
-                            <div class="bg-slate-800 rounded p-1">
-                                <span class="block text-[9px] text-slate-400">Físico</span>
-                                <span id="ferrFisico" class="text-xs font-mono text-green-400 font-bold">+0</span>
-                            </div>
-                            <div class="bg-slate-800 rounded p-1">
-                                <span class="block text-[9px] text-slate-400">Destr.</span>
-                                <span id="ferrDestreza" class="text-xs font-mono text-green-400 font-bold">+0</span>
-                            </div>
-                            <div class="bg-slate-800 rounded p-1">
-                                <span class="block text-[9px] text-slate-400">Cogn.</span>
-                                <span id="ferrCognicao" class="text-xs font-mono text-green-400 font-bold">+0</span>
-                            </div>
-                            <div class="bg-slate-800 rounded p-1">
-                                <span class="block text-[9px] text-slate-400">Caris.</span>
-                                <span id="ferrCarisma" class="text-xs font-mono text-green-400 font-bold">+0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative group hover:border-slate-500 transition duration-500">
+            <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition duration-500 rounded-xl"></div>
+            
+            <span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Cognição</span>
+            <span id="attrCognicao" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span>
+        </div>
+
+        <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative group hover:border-slate-500 transition duration-500">
+            <div class="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition duration-500 rounded-xl"></div>
+            
+            <span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Carisma</span>
+            <span id="attrCarisma" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span>
+        </div>
+
+        <div class="col-span-2 bg-black p-3 rounded-xl border border-slate-700 shadow-2xl flex justify-between items-center px-6 relative overflow-hidden group">
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+            
+            <span class="text-white text-xs uppercase font-bold tracking-[0.3em] z-10 flex items-center gap-2">
+                <i class="fas fa-moon text-slate-400"></i> Primórdio
+            </span>
+            <span id="attrPrimordio" class="text-4xl font-['Cinzel'] font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">0</span>
+        </div>
+    </div>
+                    <!-- Ferramentas de Combate Teste-->
+    <div class="bg-black/50 rounded-lg border border-slate-700 p-4">
+        <h4 class="text-[11px] text-slate-400 uppercase font-bold mb-3 border-b border-slate-800 pb-2 flex items-center tracking-widest">
+            <i class="fas fa-tools mr-2"></i> Ferramentas de Combate
+        </h4>
+        <div class="grid grid-cols-4 gap-3 text-center">
+            <div class="bg-black rounded border border-slate-600 p-2">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">RESISTIR | ESMAGAR</span>
+                <span id="ferrFisico" class="text-sm font-mono text-white font-bold">+0</span>
+            </div>
+            <div class="bg-black rounded border border-slate-600 p-2">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">EVADIR  |  ABDICAR</span>
+                <span id="ferrDestreza" class="text-sm font-mono text-white font-bold">+0</span>
+            </div>
+            <div class="bg-black rounded border border-slate-600 p-2">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">PREVER CONCENTRAR</span>
+                <span id="ferrCognicao" class="text-sm font-mono text-white font-bold">+0</span>
+            </div>
+            <div class="bg-black rounded border border-slate-600 p-2">
+                <span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">RECUPERAR INTIMIDAR</span>
+                <span id="ferrCarisma" class="text-sm font-mono text-white font-bold">+0</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+                
             </div>
 
             <!-- Abas -->
@@ -212,31 +365,75 @@
             <i class="fas fa-dice-d20"></i>
         </button>
 
-        <!-- MODAL DADOS -->
-        <div id="diceModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
-            <div class="bg-slate-800 w-full max-w-md rounded-xl shadow-2xl border border-slate-600 p-6 relative">
-                <button onclick="toggleDiceModal()" class="absolute top-2 right-2 text-slate-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
-                <h3 class="text-yellow-500 font-bold text-xl mb-4 text-center"><i class="fas fa-dice mr-2"></i>Rolador TELUMAK</h3>
-                <div class="bg-slate-900 p-6 rounded-lg mb-4 text-center border border-slate-700 min-h-[120px] flex flex-col justify-center items-center relative overflow-hidden">
-                    <i id="diceIconAnim" class="fas fa-dice-d20 text-6xl text-slate-700 absolute opacity-20"></i>
-                    <div id="diceResultMain" class="text-5xl font-black text-white relative z-10">-</div>
-                    <div id="diceResultDetail" class="text-sm text-slate-400 mt-2 relative z-10">Clique em um dado</div>
-                </div>
-                <form onsubmit="rollCustom(event)" class="flex gap-2 mb-4">
-                    <input type="text" id="customRoll" placeholder="/roll 1d20+5" class="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none text-sm font-mono">
-                    <button type="submit" class="bg-yellow-700 hover:bg-yellow-600 px-4 rounded text-white font-bold"><i class="fas fa-paper-plane"></i></button>
-                </form>
-                <div class="grid grid-cols-4 gap-2 mb-4">
-                    <button onclick="rollDice(20)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D20</button>
-                    <button onclick="rollDice(12)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D12</button>
-                    <button onclick="rollDice(10)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D10</button>
-                    <button onclick="rollDice(8)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D8</button>
-                    <button onclick="rollDice(6)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D6</button>
-                    <button onclick="rollDice(4)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D4</button>
-                    <button onclick="rollDice(100)" class="col-span-2 bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D100</button>
-                </div>
+        <!-- BOTÕES DADOS-->
+         <div id="diceModal" class="fixed inset-0 bg-black/95 backdrop-blur-sm hidden items-center justify-center z-50 fade-in">
+    <div class="bg-black w-full max-w-md rounded-2xl shadow-2xl border border-slate-800 p-6 relative">
+        
+        <button onclick="toggleDiceModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+            <i class="fas fa-times fa-lg"></i>
+        </button>
+
+        <h3 class="text-slate-400 font-bold text-xs tracking-[0.3em] uppercase text-center mb-6">
+            <i class="fas fa-dice-d20 mr-2"></i>Oráculo do Destino
+        </h3>
+
+        <div class="bg-slate-900/50 p-6 rounded-2xl mb-6 text-center border border-slate-800 flex flex-col justify-center items-center min-h-[140px] relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800/30 via-transparent to-transparent"></div>
+            
+            <div id="diceResultMain" class="text-7xl font-['Cinzel'] font-bold text-white relative z-10 transition-all">-</div>
+            
+            <div id="diceResultDetail" class="text-[10px] text-slate-400 mt-3 font-mono tracking-widest uppercase break-words w-full px-2 relative z-10 min-h-[1.5rem]">
+                Aguardando Rolagem
             </div>
         </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <button onclick="rollSystem(1, 0)" class="bg-slate-800 hover:bg-slate-700 text-white font-['Cinzel'] font-bold py-3 rounded-xl border border-slate-700 hover:border-yellow-600 transition-all group">
+                <span class="text-yellow-500 block text-xs tracking-widest mb-1">DESTINO</span>
+                1d10
+            </button>
+            <button onclick="rollSystem(4, 0)" class="bg-slate-800 hover:bg-slate-700 text-white font-['Cinzel'] font-bold py-3 rounded-xl border border-slate-700 hover:border-yellow-600 transition-all group">
+                <span class="text-yellow-500 block text-xs tracking-widest mb-1">ATRIBUTOS</span>
+                4d10
+            </button>
+        </div>
+
+        <div class="bg-slate-900/30 rounded-xl p-3 border border-slate-800/50">
+            <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-2 text-center">Rolagem Customizada</label>
+            <form onsubmit="handleCustomRoll(event)" class="flex gap-2">
+                <input type="number" id="inputQtd" placeholder="Qtd (Ex: 14)" class="w-1/3 bg-black border border-slate-700 rounded px-3 py-2 text-white text-center focus:border-yellow-500 outline-none font-mono">
+                
+                <span class="text-slate-500 self-center">d10 +</span>
+                
+                <input type="number" id="inputMod" placeholder="Bônus (Ex: 85)" class="w-1/3 bg-black border border-slate-700 rounded px-3 py-2 text-white text-center focus:border-yellow-500 outline-none font-mono">
+                
+                <button type="submit" class="bg-yellow-700 hover:bg-yellow-600 text-white px-4 rounded border border-yellow-600 font-bold transition">
+                    <i class="fas fa-play"></i>
+                </button>
+            </form>
+            <p class="text-[9px] text-slate-600 mt-2 text-center italic">*Críticos (10) explodem uma vez.</p>
+        </div>
+        <div class="mt-4 pt-4 border-t border-slate-800">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                    <i class="fas fa-scroll mr-1"></i> Histórico
+                </h4>
+                
+                <button id="btnLimparHist" onclick="acaoLimparHistorico()" class="hidden text-[9px] text-red-500 hover:text-red-400 font-bold border border-red-900/30 px-2 py-1 rounded bg-red-900/10 uppercase transition">
+                    <i class="fas fa-trash"></i> Limpar (GM)
+                </button>
+            </div>
+            
+            <div id="listaHistorico" class="h-32 overflow-y-auto bg-slate-900/20 rounded border border-slate-800 p-2 space-y-2 scrollbar-hide">
+                <div class="text-center text-slate-600 text-[10px] italic py-4">Carregando...</div>
+            </div>
+            
+            <button onclick="carregarHistorico()" class="w-full text-center text-[9px] text-slate-600 hover:text-slate-400 mt-1 cursor-pointer">
+                Toque para atualizar
+            </button>
+        </div>
+    </div>
+</div>
     </div>
 
     <!-- JAVASCRIPT -->
@@ -320,7 +517,8 @@
                     }
                     toggleScreen('app-screen');
                 } else throw new Error(data.message || "Erro desconhecido");
-            } catch (err) {
+           } catch (err) {
+                console.error("Erro detalhado:", err); // Adicione isso para debugar
                 document.getElementById('msgErro').innerText = "Erro: " + err.message;
                 document.getElementById('msgErro').classList.remove('hidden');
             } finally {
@@ -359,42 +557,143 @@
             document.getElementById('updateAlert').classList.add('hidden');
         }
 
-        // --- SISTEMA DE DADOS ---
-        function toggleDiceModal() {
-            const m = document.getElementById('diceModal');
-            m.classList.toggle('hidden'); m.classList.toggle('flex');
-            document.getElementById('diceResultMain').innerText = "-";
-            document.getElementById('diceResultDetail').innerText = "Clique em um dado";
-            document.getElementById('diceIconAnim').classList.remove('fa-spin');
+// --- SISTEMA DE DADOS (V3 - ORÁCULO COM EXPLOSÃO) ---
+
+function toggleDiceModal() {
+    const m = document.getElementById('diceModal');
+    m.classList.toggle('hidden'); 
+    m.classList.toggle('flex');
+    
+    if(!m.classList.contains('hidden')){
+        resetDisplay();
+        // Verifica GM e carrega histórico
+        if (GLOBAL_USER_ROLE === 'GM') document.getElementById('btnLimparHist').classList.remove('hidden');
+        carregarHistorico(); 
+    }
+}
+
+function resetDisplay() {
+    const main = document.getElementById('diceResultMain');
+    main.className = "text-7xl font-['Cinzel'] font-bold text-slate-600 relative z-10";
+    main.innerText = "-";
+    document.getElementById('diceResultDetail').innerText = "Aguardando Rolagem";
+}
+
+// Handler para o formulário customizado
+function handleCustomRoll(e) {
+    e.preventDefault();
+    const qtd = parseInt(document.getElementById('inputQtd').value) || 0;
+    const mod = parseInt(document.getElementById('inputMod').value) || 0;
+    
+    if (qtd > 0) {
+        rollSystem(qtd, mod);
+    } else {
+        alert("Digite pelo menos 1 dado.");
+    }
+}
+
+// Função Principal do Sistema
+function rollSystem(qtdDados, modificador) {
+    const main = document.getElementById('diceResultMain');
+    const detail = document.getElementById('diceResultDetail');
+    
+    // 1. Animação de "Caos" (Shuffle)
+    main.className = "text-7xl font-['Cinzel'] font-bold rolling-chaos relative z-10";
+    detail.innerText = `ROLANDO ${qtdDados}d10 + ${modificador}...`;
+    detail.className = "text-xs text-slate-500 mt-3 font-mono tracking-widest uppercase relative z-10 animate-pulse";
+
+    let intervals = 0;
+    const anim = setInterval(() => {
+        // Mostra números aleatórios enquanto "calcula"
+        main.innerText = Math.floor(Math.random() * (qtdDados * 10)) + modificador;
+        intervals++;
+        
+        if (intervals >= 12) { // Duração da animação
+            clearInterval(anim);
+            calcularResultadoReal(qtdDados, modificador);
         }
-        function rollCustom(e) { e.preventDefault(); parseAndRoll(document.getElementById('customRoll').value.replace('/roll', '').trim()); }
-        function rollDice(faces) { parseAndRoll(`1d${faces}`); }
-        function parseAndRoll(expr) {
-            const main = document.getElementById('diceResultMain');
-            const icon = document.getElementById('diceIconAnim');
-            main.className = "text-5xl font-black text-white relative z-10 dice-anim";
-            icon.classList.add('fa-spin');
-            setTimeout(() => {
-                const match = expr.match(/^(\d*)d(\d+)([\+\-]\d+)?$/i);
-                if (!match) { main.innerText = "?"; icon.classList.remove('fa-spin'); return; }
-                const count = parseInt(match[1]) || 1;
-                const faces = parseInt(match[2]);
-                const mod = parseInt(match[3]) || 0;
-                let total = 0, rolls = [], isCrit = false, isFumble = false;
-                for(let i=0; i<count; i++) {
-                    const r = Math.floor(Math.random() * faces) + 1;
-                    rolls.push(r); total += r;
-                    if (faces === 20 && i === 0) { if (r === 20) isCrit = true; if (r === 1) isFumble = true; }
-                }
-                total += mod;
-                icon.classList.remove('fa-spin');
-                main.innerText = total;
-                let details = `[${rolls.join('+')}]` + (mod !== 0 ? (mod > 0 ? ` +${mod}` : ` ${mod}`) : "");
-                if (isCrit) { main.className += " dice-result-crit"; details += " CRÍTICO!"; }
-                else if (isFumble) { main.className += " dice-result-fumble"; details += " FALHA!"; }
-                document.getElementById('diceResultDetail').innerText = details;
-            }, 400);
+    }, 60);
+}
+
+function calcularResultadoReal(qtd, mod) {
+    let total = 0;
+    let rolagens = [];
+    let criticos = 0;
+    let falhas = 0;
+
+    // Lógica da Explosão (1 Crítico por dado rolado)
+    for (let i = 0; i < qtd; i++) {
+        let dado = Math.floor(Math.random() * 10) + 1;
+        
+        // Estrutura para exibir: { base: 10, extra: 4 } ou { base: 5, extra: 0 }
+        let infoDado = { base: dado, extra: 0 };
+
+        total += dado;
+
+        if (dado === 10) {
+            criticos++;
+            // Explode! Rola mais um d10
+            let extra = Math.floor(Math.random() * 10) + 1;
+            total += extra;
+            infoDado.extra = extra;
+            
+            // Se o extra for 10 ou 1, conta estatística (mas não explode de novo)
+            if (extra === 10) criticos++; // Apenas para estatística visual
+            if (extra === 1) falhas++;    // Apenas para estatística visual
+        } else if (dado === 1) {
+            falhas++;
         }
+
+        rolagens.push(infoDado);
+    }
+
+    // Soma o modificador final
+    total += mod;
+
+    exibirResultado(total, rolagens, mod, criticos);
+}
+
+function exibirResultado(total, rolagens, mod, numCriticos) {
+    const main = document.getElementById('diceResultMain');
+    const detail = document.getElementById('diceResultDetail');
+
+    main.innerText = total;
+    main.className = "text-7xl font-['Cinzel'] font-bold relative z-10 result-pop";
+
+    // Define cor baseada na sorte (apenas estético)
+    if (numCriticos > 0) {
+        main.classList.add("text-emerald-400", "drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]");
+    } else {
+        main.classList.add("text-white", "drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]");
+    }
+
+    // Monta o texto de detalhe: [10+2, 5, 8] + 40
+    let strDetalhe = "[ ";
+    strDetalhe += rolagens.map(r => {
+        if (r.extra > 0) {
+            // Mostra o dado explodido: (10+X)
+            return `<span class="text-emerald-400 font-bold border-b border-emerald-500">${r.base}+${r.extra}</span>`;
+        } else if (r.base === 1) {
+            return `<span class="text-red-500">${r.base}</span>`;
+        } else {
+            return `<span class="text-slate-300">${r.base}</span>`;
+        }
+    }).join(", ");
+    strDetalhe += " ]";
+
+    if (mod !== 0) {
+        strDetalhe += ` + <span class="text-yellow-500">${mod}</span>`;
+    }
+
+    // Injeta HTML no detalhe para suportar cores
+    detail.innerHTML = strDetalhe;
+    detail.className = "text-[10px] text-slate-400 mt-3 font-mono leading-relaxed break-words w-full px-4 relative z-10";
+    let textoLog = `${rolagens.length}d10${mod >= 0 ? '+'+mod : mod} >> ${total}`;
+    if (numCriticos > 0) textoLog += " 🔥"; // Ícone de fogo se tiver crítico
+    
+    // Envia para o histórico
+    enviarLogRolagem(textoLog);
+} 
 
         // --- RENDERIZAÇÃO ---
         async function refreshCurrentChar() {
@@ -415,12 +714,29 @@
             dadosAtuais = dados;
             
             document.getElementById('charNameDisplay').innerText = dados.nome || "Sem Nome";
-            document.getElementById('charClassDisplay').innerText = (dados.cla || "") + " - " + (dados.ocupação || "");
+            document.getElementById('charClassDisplay').innerText = (dados.cla || "") + " - " + (dados.ocupacao || "");
             document.getElementById('charLevel').innerText = "Nível " + (dados.nivel || 0);
 
             updateBar('hp', dados.hp_atual, dados.hp_max);
             updateBar('ether', dados.ether_atual, dados.ether_max);
             updateBar('destino', dados.destino_atual, dados.destino_max);
+            
+            // Alcance
+            document.getElementById('alcanceNivel').innerText = dados.alcance_atual || 0;
+            // Ex: "10m"
+            document.getElementById('alcanceDetalhe').innerText = (dados.alcance_max || 0) + " Metros";
+
+            // Movimento
+            document.getElementById('movimentoNivel').innerText = dados.movimento_atual || 0;
+            // Ex: "15m Ação" (mais curto para caber na fonte grande)
+            document.getElementById('movimentoDetalhe').innerText = (dados.movimento_max || 0) + " Metros por Ação"; 
+
+            // Fortitude
+            document.getElementById('fortitudeNivel').innerText = dados.fortitude_atual || 0;
+            // Ex: "150 Kg"
+           document.getElementById('fortitudeDetalhe').innerText = (dados.fortitude_max || 0) + " Kg";
+
+    // ----------------------------------------------------
 
             const hpAtual = parseInt(dados.hp_atual) || 0;
             const hpMax = parseInt(dados.hp_max) || 1;
@@ -467,11 +783,100 @@
             else el.innerHTML = content.replace(/\n/g, "<br>");
         }
         function switchTab(tabName) {
+            // 1. Esconde todos os conteúdos
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('text-indigo-400', 'border-indigo-500'); el.classList.add('text-slate-400', 'border-transparent'); });
+            
+            // 2. Reseta cores dos botões
+            document.querySelectorAll('.tab-btn').forEach(el => { 
+                el.classList.remove('text-indigo-400', 'border-indigo-500'); 
+                el.classList.add('text-slate-400', 'border-transparent'); 
+            });
+            
+            // 3. Mostra o conteúdo escolhido
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // 4. Acende o botão escolhido
             const activeBtn = document.querySelector(`button[data-tab="${tabName}"]`);
-            if (activeBtn) { activeBtn.classList.add('text-indigo-400', 'border-indigo-500'); activeBtn.classList.remove('text-slate-400', 'border-transparent'); }
+            if (activeBtn) { 
+                activeBtn.classList.add('text-indigo-400', 'border-indigo-500'); 
+                activeBtn.classList.remove('text-slate-400', 'border-transparent'); 
+            }
+        } 
+        // -----------------------------------------------------------------
+        // <--- AQUI FECHA A FUNÇÃO switchTab (ESSA CHAVE } É O SEGREDO!)
+        // -----------------------------------------------------------------
+
+
+        // --- FUNÇÕES DE HISTÓRICO (AGORA ESTÃO LIVRES PARA FUNCIONAR) ---
+
+        async function enviarLogRolagem(textoResultado) {
+            // Tenta pegar o nome da tela, se falhar, usa o email ou "Desconhecido"
+            const elNome = document.getElementById('charNameDisplay');
+            const nome = elNome ? elNome.innerText : (GLOBAL_CURRENT_CHAR_EMAIL || "Desconhecido");
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "registrarRolagem", usuario: nome, resumo: textoResultado })
+                });
+                carregarHistorico();
+            } catch (e) { console.error("Erro ao salvar log", e); }
+        }
+
+        async function carregarHistorico() {
+            const div = document.getElementById('listaHistorico');
+            // Mostra carregando
+            div.innerHTML = '<div class="text-center text-slate-600 text-[10px] italic py-4"><i class="fas fa-circle-notch fa-spin"></i> Buscando...</div>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "lerHistorico" })
+                });
+                const data = await response.json();
+                
+                div.innerHTML = ""; 
+                if (data.status === "SUCESSO" && data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const dataObj = new Date(log.data);
+                        const hora = !isNaN(dataObj) ? dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : "--:--";
+                        
+                        div.innerHTML += `
+                            <div class="border-b border-slate-800/50 pb-1 mb-1 last:border-0">
+                                <div class="flex justify-between text-[9px] text-slate-500">
+                                    <span class="font-bold text-slate-400">${log.quem}</span>
+                                    <span>${hora}</span>
+                                </div>
+                                <div class="text-emerald-400 text-xs font-mono font-bold leading-tight mt-1">${log.resultado}</div>
+                            </div>`;
+                    });
+                } else {
+                    div.innerHTML = '<div class="text-center text-slate-600 text-[10px] italic py-4">Sem registros recentes.</div>';
+                }
+            } catch (e) { 
+                console.error(e);
+                div.innerHTML = '<div class="text-center text-red-500 text-[10px] py-4">Erro de conexão.</div>';
+            }
+        }
+
+        async function acaoLimparHistorico() {
+            if(!confirm("MESTRE: Tem certeza que deseja apagar todo o histórico?")) return;
+            
+            const btn = document.getElementById('btnLimparHist');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = "Apagando...";
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "limparHistorico", emailSolicitante: GLOBAL_CURRENT_CHAR_EMAIL })
+                });
+                carregarHistorico();
+            } catch(e) { 
+                alert("Erro ao conectar com servidor."); 
+            } finally {
+                btn.innerHTML = textoOriginal;
+            }
         }
     </script>
 </body>
