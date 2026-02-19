@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Mestre | Telumak</title>
+    <title>Painel do Mestre | Telumak V4</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Fonte RPG -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
         :root { --color-bg: #0f172a; --color-text: #e2e8f0; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--color-bg); color: var(--color-text); overflow-x: hidden;}
         .rpg-font { font-family: 'Cinzel', serif; }
         
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -23,40 +21,58 @@
         .card-scroll::-webkit-scrollbar-track { background: #374151; }
         .card-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
 
-        /* Editor Rico */
+        /* Editor Rico - Modais do GM */
         .editor-content {
             min-height: 100px; max-height: 200px; overflow-y: auto; background-color: #1f2937;
             border: 1px solid #374151; padding: 0.5rem; color: #d1d5db; border-radius: 0.375rem;
             outline: none; white-space: pre-wrap;
         }
         .editor-content:focus { border-color: #facc15; }
-        
-        .toolbar-btn {
-            background: #374151; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;
-            margin-right: 2px; transition: background 0.2s;
-        }
+        .toolbar-btn { background: #374151; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; margin-right: 2px; transition: background 0.2s; }
         .toolbar-btn:hover { background: #4b5563; }
 
-        /* Dados e FABs */
+        /* FABs */
         .fab-dice { position: fixed; bottom: 20px; right: 20px; z-index: 40; transition: transform 0.2s; }
         .fab-dice:hover { transform: scale(1.1); }
-        
-        /* Grimório no Canto Superior Direito (Abaixo do Header) */
         .fab-list { position: fixed; top: 90px; right: 20px; z-index: 40; transition: transform 0.2s; }
         .fab-list:hover { transform: scale(1.1); }
 
-        .dice-result-crit { color: #4ade80; text-shadow: 0 0 10px #22c55e; }
-        .dice-result-fumble { color: #f87171; text-shadow: 0 0 10px #ef4444; }
-        .dice-anim { animation: rollDiceAnim 0.5s ease-out; }
-        @keyframes rollDiceAnim { 0% { transform: rotate(0deg) scale(0.5); } 100% { transform: rotate(360deg) scale(1); } }
-
-        /* Full Sheet Styles (Copiado do Player) */
-        .bar-container { background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 15px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); position: relative; }
-        .bar-fill { height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 0.6rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
-        .hp-fill { background: linear-gradient(90deg, #991b1b, #ef4444); }
-        .ether-fill { background: linear-gradient(90deg, #1e3a8a, #3b82f6); }
-        .destino-fill { background: linear-gradient(90deg, #ca8a04, #facc15); }
+        /* Estilos Full Sheet Replicados do Player */
+        .bar-container { background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; height: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); position: relative; }
+        .bar-fill { height: 100%; transition: width 0.5s ease-in-out; display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 0.7rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
+        .hp-fill { background: linear-gradient(90deg, #7f1d1d, #ef4444); box-shadow: 0 0 10px rgba(239, 68, 68, 0.6); }
+        .ether-fill { background: linear-gradient(90deg, #1e3a8a, #3b82f6); box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); }
+        .destino-fill { background: linear-gradient(90deg, #a16207, #facc15); box-shadow: 0 0 10px rgba(250, 204, 21, 0.6); }
+        .alcance-fill { background: linear-gradient(90deg, #059669, #34d399); }   
+        .movimento-fill { background: linear-gradient(90deg, #0891b2, #22d3ee); } 
+        .fortitude-fill { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+        .bar-track { background-color: #0f172a; border: 1px solid #334155; border-radius: 9999px; overflow: hidden; height: 12px; position: relative; }
         .html-content strong { color: #818cf8; } .html-content b { color: #f472b6; }
+        .html-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+
+        /* Estilos Novo Rolador (Oráculo) */
+        @keyframes chaosShake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .rolling-chaos { animation: chaosShake 0.1s infinite; color: #94a3b8; }
+        .result-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        
+        /* Ajuste de Texto Área Grande GM */
+        #historiaContent { min-height: 300px; font-family: 'Inter', sans-serif; white-space: pre-wrap; }
+        #historiaContent:empty:before { content: attr(placeholder); color: #475569; pointer-events: none; display: block; }
+        #historiaContent ul { list-style-type: disc; margin-left: 20px; }
+        #historiaContent b, #historiaContent strong { color: #cbd5e1; }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen p-4 flex flex-col items-center">
@@ -64,7 +80,6 @@
     <!-- HEADER -->
     <header class="w-full max-w-6xl mb-6 flex justify-between items-center border-b border-gray-700 pb-4 sticky top-0 bg-gray-900 z-30 pt-2">
         <div class="flex items-center gap-4">
-             <!-- LOGO PEQUENA -->
             <div class="h-10 w-auto overflow-hidden flex items-center">
                  <span class="text-xl font-bold text-yellow-600 rpg-font tracking-widest border border-yellow-600/30 px-2 rounded bg-black/40">TELUMAK</span>
             </div>
@@ -76,10 +91,13 @@
         </div>
         
         <div class="flex gap-4 items-center">
-            <button onclick="init()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded text-white transition border border-gray-600">
-                <i class="fas fa-sync-alt mr-1"></i> Recarregar
+            <button onclick="abrirHistoriaGM()" class="text-xs bg-indigo-900/50 hover:bg-indigo-800 px-3 py-2 rounded text-indigo-200 transition border border-indigo-700 shadow-md font-bold">
+                <i class="fas fa-book-open mr-1"></i> Anotações GM
             </button>
-            <button onclick="logout()" class="text-xs bg-red-900/50 hover:bg-red-900 px-3 py-1 rounded text-red-200 transition border border-red-800" title="Sair">
+            <button onclick="init()" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded text-white transition border border-gray-600" title="Recarregar">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <button onclick="logout()" class="text-xs bg-red-900/50 hover:bg-red-900 px-3 py-2 rounded text-red-200 transition border border-red-800" title="Sair">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -107,118 +125,43 @@
     <!-- MODAIS E FLUTUANTES -->
     <!-- ======================= -->
 
-    <!-- FAB 1: LISTA COMPLETA (GRIMÓRIO) - Canto Superior Direito -->
-    <button onclick="toggleCharListModal()" class="fab-list bg-slate-700 hover:bg-slate-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-2 border-slate-500" title="Grimório (Todos os Personagens)">
+    <!-- FAB 1: LISTA COMPLETA (GRIMÓRIO) -->
+    <button onclick="toggleCharListModal()" class="fab-list bg-slate-700 hover:bg-slate-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-2 border-slate-500">
         <i class="fas fa-scroll text-yellow-500"></i>
     </button>
 
-    <!-- FAB 2: DADOS - Canto Inferior Direito -->
-    <button onclick="toggleDiceModal()" class="fab-dice bg-yellow-700 hover:bg-yellow-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl border-4 border-slate-800" title="Rolador de Dados">
+    <!-- FAB 2: DADOS (ORÁCULO) -->
+    <button onclick="toggleDiceModal()" class="fab-dice bg-yellow-700 hover:bg-yellow-600 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-3xl border-4 border-slate-800">
         <i class="fas fa-dice-d20"></i>
     </button>
-
 
     <!-- MODAL 1: LISTA DE PERSONAGENS -->
     <div id="charListModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
         <div class="bg-gray-800 w-full max-w-sm rounded-xl shadow-2xl border border-gray-600 p-6 relative max-h-[80vh] flex flex-col">
             <button onclick="toggleCharListModal()" class="absolute top-2 right-2 text-gray-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
             <h3 class="text-yellow-500 font-bold text-xl mb-4 text-center border-b border-gray-700 pb-2">Grimório Completo</h3>
-            <div id="fullCharList" class="overflow-y-auto custom-scroll space-y-2 flex-1">
-                <!-- Preenchido via JS -->
-            </div>
+            <div id="fullCharList" class="overflow-y-auto custom-scroll space-y-2 flex-1"></div>
         </div>
     </div>
 
-
-    <!-- MODAL 2: FICHA COMPLETA (VISUALIZAÇÃO) -->
+    <!-- MODAL 2: FICHA COMPLETA (VISUALIZAÇÃO IDENTICA AO INDEX.HTML) -->
     <div id="fullSheetModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[60] fade-in p-2 md:p-8 overflow-y-auto">
-        <div class="bg-slate-900 w-full max-w-4xl rounded-xl shadow-2xl border border-yellow-600 relative flex flex-col my-auto">
-            
-            <!-- Header Modal -->
-            <div class="p-4 bg-slate-800 rounded-t-xl border-b border-slate-700 flex justify-between items-center sticky top-0 z-10">
+        <div class="bg-slate-900 w-full max-w-4xl rounded-xl shadow-2xl border border-yellow-600 relative flex flex-col my-auto overflow-hidden">
+            <div class="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center sticky top-0 z-50 shadow-md">
                 <div class="flex items-center gap-3">
-                    <span class="text-yellow-600 font-bold text-lg rpg-font">Ficha Completa</span>
-                    <span id="fsName" class="text-white font-bold text-xl">...</span>
+                    <span class="text-yellow-600 font-bold text-lg rpg-font">Visualização Rápida</span>
+                    <span id="fsName" class="text-white font-bold text-xl drop-shadow-md">...</span>
                 </div>
-                <button onclick="closeFullSheet()" class="text-gray-400 hover:text-red-500 bg-slate-900 px-3 py-1 rounded border border-slate-700"><i class="fas fa-times fa-lg"></i> Fechar</button>
+                <button onclick="closeFullSheet()" class="text-gray-400 hover:text-red-500 bg-slate-900 px-3 py-1 rounded border border-slate-700"><i class="fas fa-times"></i> Fechar</button>
             </div>
-
-            <!-- Corpo da Ficha (Igual ao Player) -->
-            <div class="p-6 overflow-y-auto max-h-[80vh]">
-                <!-- Status -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Vida</span><span id="fsHpTxt" class="text-white font-mono text-xs">0/0</span></div>
-                        <div class="bar-container"><div id="fsHpBar" class="bar-fill hp-fill" style="width: 0%"></div></div>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Éter</span><span id="fsEthTxt" class="text-white font-mono text-xs">0/0</span></div>
-                        <div class="bar-container"><div id="fsEthBar" class="bar-fill ether-fill" style="width: 0%"></div></div>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
-                        <div class="flex justify-between items-end mb-1"><span class="text-xs text-gray-400">Destino</span><span id="fsDesTxt" class="text-white font-mono text-xs">0/0</span></div>
-                        <div class="bar-container"><div id="fsDesBar" class="bar-fill destino-fill" style="width: 0%"></div></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Imagem -->
-                    <div class="md:col-span-1">
-                        <div class="relative aspect-[3/4] rounded-xl overflow-hidden border border-slate-700 bg-black">
-                            <img id="fsImage" src="" class="w-full h-full object-cover">
-                            <div class="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-xs text-yellow-500 border border-yellow-500/30" id="fsLevel">Lvl ?</div>
-                        </div>
-                    </div>
-                    <!-- Atributos -->
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="grid grid-cols-4 gap-2 text-center">
-                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">FIS</div><div id="fsFis" class="text-xl font-bold text-white">0</div></div>
-                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">DES</div><div id="fsDes" class="text-xl font-bold text-white">0</div></div>
-                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">COG</div><div id="fsCog" class="text-xl font-bold text-white">0</div></div>
-                            <div class="bg-slate-800 p-2 rounded"><div class="text-[10px] text-gray-500">CAR</div><div id="fsCar" class="text-xl font-bold text-white">0</div></div>
-                        </div>
-                        <div class="bg-indigo-900/20 border border-indigo-500/30 p-2 rounded flex justify-between px-4">
-                            <span class="text-xs text-indigo-400 font-bold uppercase">Primórdio</span><span id="fsPrim" class="text-xl font-bold text-indigo-300">0</span>
-                        </div>
-                        <!-- Ferramentas -->
-                         <div class="bg-slate-900/50 rounded-lg border border-slate-700 p-2">
-                            <h4 class="text-[10px] text-slate-500 uppercase font-bold mb-1">Ferramentas</h4>
-                            <div class="grid grid-cols-4 gap-2 text-center text-xs">
-                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">FIS</span><span id="fsToolFis" class="text-green-400 font-mono">+0</span></div>
-                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">DES</span><span id="fsToolDes" class="text-green-400 font-mono">+0</span></div>
-                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">COG</span><span id="fsToolCog" class="text-green-400 font-mono">+0</span></div>
-                                <div class="bg-slate-800 rounded"><span class="text-gray-500 block text-[8px]">CAR</span><span id="fsToolCar" class="text-green-400 font-mono">+0</span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Conteúdo HTML -->
-                <div class="mt-6 space-y-6">
-                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
-                        <h3 class="text-indigo-400 font-bold border-b border-slate-700 mb-2 pb-1">Ataques</h3>
-                        <div id="fsHtmlAtaques" class="html-content text-sm text-slate-300 text-sm"></div>
-                    </div>
-                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
-                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Dons & Poderes</h3>
-                        <div id="fsHtmlDons" class="html-content text-sm text-slate-300 text-sm"></div>
-                    </div>
-                     <div class="bg-slate-800 p-4 rounded border border-slate-700">
-                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Equipamento</h3>
-                        <div id="fsHtmlEquip" class="html-content text-sm text-slate-300 text-sm"></div>
-                    </div>
-                    <div class="bg-slate-800 p-4 rounded border border-slate-700">
-                        <h3 class="text-slate-400 font-bold border-b border-slate-700 mb-2 pb-1">Defesa & Reação</h3>
-                        <div id="fsHtmlDefesa" class="html-content text-sm text-slate-300 text-sm"></div>
-                    </div>
-                </div>
-
+            
+            <div class="p-6 overflow-y-auto max-h-[80vh] bg-slate-900" id="fsBodyContent">
+                <!-- Injetado via JavaScript na inicialização para economizar linhas -->
             </div>
         </div>
     </div>
 
-
-    <!-- MODAL 3: EDITOR DE TEXTO (Mantido) -->
+    <!-- MODAL 3: EDITOR DE TEXTO DA FICHA -->
     <div id="textEditorModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
         <div class="bg-gray-800 w-full max-w-2xl rounded-xl shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-gray-700 flex justify-between items-center bg-gray-900 rounded-t-xl">
@@ -235,28 +178,104 @@
         </div>
     </div>
 
-    <!-- MODAL 4: DADOS (Igual Player) -->
-    <div id="diceModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 fade-in">
-        <div class="bg-slate-800 w-full max-w-md rounded-xl shadow-2xl border border-slate-600 p-6 relative">
-            <button onclick="toggleDiceModal()" class="absolute top-2 right-2 text-slate-400 hover:text-white"><i class="fas fa-times fa-lg"></i></button>
-            <h3 class="text-yellow-500 font-bold text-xl mb-4 text-center"><i class="fas fa-dice mr-2"></i>Rolador TELUMAK</h3>
-            <div class="bg-slate-900 p-6 rounded-lg mb-4 text-center border border-slate-700 min-h-[120px] flex flex-col justify-center items-center relative overflow-hidden">
-                <i id="diceIconAnim" class="fas fa-dice-d20 text-6xl text-slate-700 absolute opacity-20"></i>
-                <div id="diceResultMain" class="text-5xl font-black text-white relative z-10">-</div>
-                <div id="diceResultDetail" class="text-sm text-slate-400 mt-2 relative z-10">Clique em um dado</div>
+    <!-- MODAL 4: NOVO ROLADOR (ORÁCULO DO DESTINO) COM BOTÕES EXTRAS -->
+    <div id="diceModal" class="fixed inset-0 bg-black/95 backdrop-blur-sm hidden items-center justify-center z-50 fade-in">
+        <div class="bg-black w-full max-w-md rounded-2xl shadow-2xl border border-slate-800 p-6 relative flex flex-col max-h-[90vh]">
+            <button onclick="toggleDiceModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i class="fas fa-times fa-lg"></i></button>
+            <h3 class="text-slate-400 font-bold text-xs tracking-[0.3em] uppercase text-center mb-6"><i class="fas fa-dice-d20 mr-2"></i>Oráculo do Mestre</h3>
+
+            <div class="bg-slate-900/50 p-6 rounded-2xl mb-6 text-center border border-slate-800 flex flex-col justify-center items-center min-h-[140px] relative overflow-hidden shrink-0">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800/30 via-transparent to-transparent"></div>
+                <div id="diceResultMain" class="text-7xl font-['Cinzel'] font-bold text-slate-600 relative z-10 transition-all">-</div>
+                <div id="diceResultDetail" class="text-[10px] text-slate-400 mt-3 font-mono tracking-widest uppercase break-words w-full px-2 relative z-10 min-h-[1.5rem]">Aguardando Rolagem</div>
             </div>
-            <form onsubmit="rollCustom(event)" class="flex gap-2 mb-4">
-                <input type="text" id="customRoll" placeholder="/roll 1d20+5" class="w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-white focus:border-yellow-500 outline-none text-sm font-mono">
-                <button type="submit" class="bg-yellow-700 hover:bg-yellow-600 px-4 rounded text-white font-bold"><i class="fas fa-paper-plane"></i></button>
-            </form>
-            <div class="grid grid-cols-4 gap-2 mb-4">
-                <button onclick="rollDice(20)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D20</button>
-                <button onclick="rollDice(12)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D12</button>
-                <button onclick="rollDice(10)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D10</button>
-                <button onclick="rollDice(8)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D8</button>
-                <button onclick="rollDice(6)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D6</button>
-                <button onclick="rollDice(4)" class="bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D4</button>
-                <button onclick="rollDice(100)" class="col-span-2 bg-slate-700 hover:bg-slate-600 p-2 rounded text-indigo-300 font-bold border border-slate-600">D100</button>
+
+            <!-- NOVOS BOTÕES RÁPIDOS ADICIONADOS AQUI -->
+            <div class="grid grid-cols-2 gap-3 mb-4 shrink-0">
+                <button onclick="rollSystem(1, 0)" class="bg-slate-800 hover:bg-slate-700 text-white font-['Cinzel'] font-bold py-3 rounded-xl border border-slate-700 hover:border-yellow-600 transition-all group shadow">
+                    <span class="text-yellow-500 block text-xs tracking-widest mb-1">DESTINO</span>
+                    1d10
+                </button>
+                <button onclick="rollSystem(4, 0)" class="bg-slate-800 hover:bg-slate-700 text-white font-['Cinzel'] font-bold py-3 rounded-xl border border-slate-700 hover:border-yellow-600 transition-all group shadow">
+                    <span class="text-yellow-500 block text-xs tracking-widest mb-1">ATRIBUTOS</span>
+                    4d10
+                </button>
+            </div>
+
+            <div class="bg-slate-900/30 rounded-xl p-3 border border-slate-800/50 mb-4 shrink-0">
+                <label class="block text-[9px] text-slate-500 uppercase tracking-widest mb-2 text-center">Rolagem Customizada</label>
+                <form onsubmit="handleCustomRoll(event)" class="flex gap-2">
+                    <input type="number" id="inputQtd" placeholder="Qtd (Ex: 5)" class="w-1/3 bg-black border border-slate-700 rounded px-3 py-2 text-white text-center focus:border-yellow-500 outline-none font-mono" required>
+                    <span class="text-slate-500 self-center">d10 +</span>
+                    <input type="number" id="inputMod" placeholder="Bônus (Ex: 10)" class="w-1/3 bg-black border border-slate-700 rounded px-3 py-2 text-white text-center focus:border-yellow-500 outline-none font-mono">
+                    <button type="submit" class="bg-yellow-700 hover:bg-yellow-600 text-white px-4 rounded border border-yellow-600 font-bold transition"><i class="fas fa-play"></i></button>
+                </form>
+            </div>
+
+            <div class="flex-1 overflow-hidden flex flex-col border-t border-slate-800 pt-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-[10px] text-slate-500 uppercase tracking-widest font-bold"><i class="fas fa-scroll mr-1"></i> Histórico Global</h4>
+                    <button onclick="acaoLimparHistorico()" class="text-[9px] text-red-500 hover:text-red-400 font-bold border border-red-900/30 px-2 py-1 rounded bg-red-900/10 uppercase transition"><i class="fas fa-trash"></i> Limpar</button>
+                </div>
+                <div id="listaHistorico" class="flex-1 overflow-y-auto bg-slate-900/20 rounded border border-slate-800 p-2 space-y-2 scrollbar-hide">
+                    <div class="text-center text-slate-600 text-[10px] italic py-4">Carregando...</div>
+                </div>
+                <button onclick="carregarHistorico()" class="w-full text-center text-[9px] text-slate-600 hover:text-slate-400 mt-2 cursor-pointer">Atualizar Histórico</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: ANOTAÇÕES / HISTÓRIA COM RICH TEXT E LIXEIRA -->
+    <div id="historiaModal" class="fixed inset-0 bg-black/90 hidden items-center justify-center z-[70] fade-in p-4">
+        <div class="bg-slate-800 w-full max-w-5xl h-[85vh] rounded-xl shadow-2xl border border-indigo-600 relative flex flex-col">
+            <div class="p-4 bg-slate-900 rounded-t-xl border-b border-slate-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-indigo-400 rpg-font"><i class="fas fa-book mr-2"></i>Grimório do Mestre (História)</h2>
+                <div class="flex gap-2">
+                    <button id="btnSalvarHistoria" onclick="salvarAnotacaoAtual()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-1 rounded text-white text-sm font-bold shadow transition flex items-center gap-2">
+                        <i class="fas fa-save"></i> Salvar Nuvem
+                    </button>
+                    <button onclick="fecharHistoriaGM()" class="text-gray-400 hover:text-red-500 px-3 py-1 bg-slate-800 rounded border border-slate-600"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Sidebar Capítulos -->
+                <div class="w-1/3 md:w-1/4 bg-slate-900 border-r border-slate-700 flex flex-col">
+                    <div class="p-3 border-b border-slate-700">
+                        <div class="flex gap-2">
+                            <input type="text" id="novoCapituloNome" placeholder="Novo Capítulo..." class="w-full bg-slate-800 text-white text-xs p-2 rounded border border-slate-600 focus:border-indigo-500 outline-none">
+                            <button onclick="criarNovoCapitulo()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 rounded"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div id="listaCapitulos" class="flex-1 overflow-y-auto p-2 space-y-1 custom-scroll">
+                        <div class="text-slate-500 text-xs text-center mt-4">Carregando...</div>
+                    </div>
+                </div>
+                
+                <!-- Área de Texto com Toolbar Completa -->
+                <div class="flex-1 flex flex-col bg-slate-800">
+                    <div class="p-2 bg-slate-700 border-b border-slate-600 flex items-center justify-between">
+                        <span id="capituloAtivoNome" class="text-indigo-300 font-bold text-sm ml-2">Selecione um capítulo</span>
+                        <span id="statusHistoria" class="text-xs text-slate-400 mr-2"></span>
+                    </div>
+                    
+                    <!-- NOVO: BARRA DE FERRAMENTAS RICH TEXT E EXCLUIR CAPÍTULO -->
+                    <div class="p-2 bg-slate-900 border-b border-slate-700 flex gap-1 items-center">
+                        <button onclick="document.execCommand('bold')" class="toolbar-btn" title="Negrito"><i class="fas fa-bold"></i></button>
+                        <button onclick="document.execCommand('italic')" class="toolbar-btn" title="Itálico"><i class="fas fa-italic"></i></button>
+                        <button onclick="document.execCommand('underline')" class="toolbar-btn" title="Sublinhado"><i class="fas fa-underline"></i></button>
+                        <div class="w-px h-5 bg-slate-600 mx-1"></div>
+                        <button onclick="document.execCommand('insertUnorderedList')" class="toolbar-btn" title="Tópicos"><i class="fas fa-list-ul"></i></button>
+                        
+                        <div class="flex-1"></div>
+                        <button onclick="excluirCapituloAtual()" class="text-red-400 hover:text-white px-3 py-1 rounded text-xs bg-red-900/40 hover:bg-red-600 border border-red-800 transition shadow">
+                            <i class="fas fa-trash-alt mr-1"></i> Excluir Capítulo
+                        </button>
+                    </div>
+
+                    <!-- Modificado de textarea para div contenteditable para aceitar formatação -->
+                    <div id="historiaContent" contenteditable="true" class="flex-1 w-full bg-slate-800 text-slate-200 p-5 focus:outline-none focus:ring-1 focus:ring-indigo-500 overflow-y-auto" placeholder="Escreva os detalhes da campanha, NPCs, segredos..."></div>
+                </div>
             </div>
         </div>
     </div>
@@ -265,13 +284,15 @@
     <div id="globalLog" class="hidden fixed bottom-4 right-4 bg-gray-800 border border-gray-600 px-4 py-2 rounded shadow-xl text-xs z-50"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbz60xAy9ENu9WhfoBSJPHfpbJNc0N9FoxUP1h4O0DUIYtUIDDksWZHrAonWBDMxqfLQVg/exec";
-
-        // CAMPOS PARA EDIÇÃO RÁPIDA
+        // ==========================================
+        // CONFIGURAÇÕES GERAIS
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxw4VQm5jkVNbkhc-9Q2W8RcdYKHARTrTj0tRb0eKe8ujslyM8NNEwNHhu-wxgPsu9zSw/exec"; // <--- ATENÇÃO: COLOQUE A NOVA URL AQUI!
+        
+        // Colunas e Campos
         const COL_HP = "hp_atual"; const COL_ETHER = "ether_atual"; const COL_DESTINO = "destino_atual";
         const COL_TOOL_FIS = "ferramenta_fisico"; const COL_TOOL_DES = "ferramenta_destreza";
         const COL_TOOL_COG = "ferramenta_cognicao"; const COL_TOOL_CAR = "ferramenta_carisma";
-
         const CAMPOS_TEXTO = [
             { id: 'html_ataques', label: 'Ataques & Técnicas', icon: 'fa-fist-raised' },
             { id: 'html_defesa', label: 'Defesa & Reação', icon: 'fa-shield-alt' },
@@ -283,22 +304,17 @@
         let personagensNaMesa = [];
         let filaDeMudancas = {}; 
         let editorCharIndex = null;
+        
+        // Estado da História
+        let anotacoesGlobais = [];
+        let capituloAtivo = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const session = localStorage.getItem('moger_session');
-            if (session) {
-                const data = JSON.parse(session);
-                const now = new Date().getTime();
-                if (data.role === 'GM' && now < data.expiry) {
-                    init();
-                } else {
-                    alert("Acesso expirado.");
-                    window.location.href = 'index.html';
-                }
-            } else {
-                alert("Acesso restrito a GMs.");
-                window.location.href = 'index.html';
+            if(API_URL.includes("COLE_SUA_API_URL_AQUI")) {
+                alert("Mestre, você esqueceu de configurar a API_URL no código do Painel V4!");
             }
+            construirCorpoFichaModal(); // Cria a estrutura visual da ficha
+            init();
         });
 
         async function init() {
@@ -307,31 +323,20 @@
                 const response = await fetch(API_URL);
                 todosDados = await response.json();
                 
-                // Popula Select da Mesa
                 const select = document.getElementById('charSelect');
                 select.innerHTML = '<option value="">-- Adicionar à Mesa --</option>';
-                
-                // Popula Lista do Grimório (Modal)
                 const fullList = document.getElementById('fullCharList');
                 fullList.innerHTML = '';
 
                 todosDados.forEach((char, index) => {
                     const nome = char.nome || "Sem Nome";
-                    
-                    // Select Mesa
-                    const opt = document.createElement('option');
-                    opt.value = index;
-                    opt.innerText = nome;
+                    const opt = document.createElement('option'); opt.value = index; opt.innerText = nome;
                     select.appendChild(opt);
 
-                    // Lista Grimório
                     const btn = document.createElement('button');
                     btn.className = "w-full text-left bg-slate-700 hover:bg-slate-600 p-3 rounded flex justify-between items-center border border-slate-600";
                     btn.onclick = () => openFullSheet(index);
-                    btn.innerHTML = `
-                        <span class="font-bold text-white">${nome}</span>
-                        <span class="text-xs text-yellow-500">Lvl ${char.nivel || 0}</span>
-                    `;
+                    btn.innerHTML = `<span class="font-bold text-white">${nome}</span><span class="text-xs text-yellow-500">Lvl ${char.nivel || 0}</span>`;
                     fullList.appendChild(btn);
                 });
 
@@ -339,286 +344,545 @@
                 filaDeMudancas = {};
                 atualizarBotaoSalvar();
                 renderizarGrid();
+                fetchHistoriaNuvem();
+
             } catch (error) {
                 console.error("Erro no init:", error);
                 mostrarLog("Erro ao carregar dados.", "text-red-500");
             }
         }
 
-        // --- SISTEMA DE DADOS (Igual Player) ---
+        // ==========================================
+        // SISTEMA DE DADOS (ORÁCULO)
+        // ==========================================
         function toggleDiceModal() {
             const m = document.getElementById('diceModal');
             m.classList.toggle('hidden'); m.classList.toggle('flex');
-            document.getElementById('diceResultMain').innerText = "-";
-            document.getElementById('diceResultDetail').innerText = "Clique em um dado";
-            document.getElementById('diceIconAnim').classList.remove('fa-spin');
+            if(!m.classList.contains('hidden')){
+                resetDisplayDice();
+                carregarHistorico(); 
+            }
         }
-        function rollCustom(e) { e.preventDefault(); parseAndRoll(document.getElementById('customRoll').value.replace('/roll', '').trim()); }
-        function rollDice(faces) { parseAndRoll(`1d${faces}`); }
-        function parseAndRoll(expr) {
+
+        function resetDisplayDice() {
             const main = document.getElementById('diceResultMain');
-            const icon = document.getElementById('diceIconAnim');
-            main.className = "text-5xl font-black text-white relative z-10 dice-anim";
-            icon.classList.add('fa-spin');
-            setTimeout(() => {
-                const match = expr.match(/^(\d*)d(\d+)([\+\-]\d+)?$/i);
-                if (!match) { main.innerText = "?"; icon.classList.remove('fa-spin'); return; }
-                const count = parseInt(match[1]) || 1;
-                const faces = parseInt(match[2]);
-                const mod = parseInt(match[3]) || 0;
-                let total = 0, rolls = [], isCrit = false, isFumble = false;
-                for(let i=0; i<count; i++) {
-                    const r = Math.floor(Math.random() * faces) + 1;
-                    rolls.push(r); total += r;
-                    if (faces === 20 && i === 0) { if (r === 20) isCrit = true; if (r === 1) isFumble = true; }
+            main.className = "text-7xl font-['Cinzel'] font-bold text-slate-600 relative z-10";
+            main.innerText = "-";
+            document.getElementById('diceResultDetail').innerText = "Aguardando Rolagem";
+        }
+
+        function handleCustomRoll(e) {
+            e.preventDefault();
+            const qtd = parseInt(document.getElementById('inputQtd').value) || 0;
+            const mod = parseInt(document.getElementById('inputMod').value) || 0;
+            if (qtd > 0) rollSystem(qtd, mod);
+        }
+
+        function rollSystem(qtdDados, modificador) {
+            const main = document.getElementById('diceResultMain');
+            const detail = document.getElementById('diceResultDetail');
+            
+            main.className = "text-7xl font-['Cinzel'] font-bold rolling-chaos relative z-10";
+            detail.innerText = `ROLANDO ${qtdDados}d10 + ${modificador}...`;
+            detail.className = "text-xs text-slate-500 mt-3 font-mono tracking-widest uppercase relative z-10 animate-pulse";
+
+            let intervals = 0;
+            const anim = setInterval(() => {
+                main.innerText = Math.floor(Math.random() * (qtdDados * 10)) + modificador;
+                intervals++;
+                if (intervals >= 12) {
+                    clearInterval(anim);
+                    calcularResultadoReal(qtdDados, modificador);
                 }
-                total += mod;
-                icon.classList.remove('fa-spin');
-                main.innerText = total;
-                let details = `[${rolls.join('+')}]` + (mod !== 0 ? (mod > 0 ? ` +${mod}` : ` ${mod}`) : "");
-                if (isCrit) { main.className += " dice-result-crit"; details += " CRÍTICO!"; }
-                else if (isFumble) { main.className += " dice-result-fumble"; details += " FALHA!"; }
-                document.getElementById('diceResultDetail').innerText = details;
-            }, 400);
+            }, 60);
         }
 
-
-        // --- SISTEMA DE VISUALIZAÇÃO COMPLETA (Grimório) ---
-        function toggleCharListModal() {
-            const m = document.getElementById('charListModal');
-            m.classList.toggle('hidden'); m.classList.toggle('flex');
+        function calcularResultadoReal(qtd, mod) {
+            let total = 0; let rolagens = []; let criticos = 0;
+            for (let i = 0; i < qtd; i++) {
+                let dado = Math.floor(Math.random() * 10) + 1;
+                let infoDado = { base: dado, extra: 0 };
+                total += dado;
+                if (dado === 10) {
+                    criticos++;
+                    let extra = Math.floor(Math.random() * 10) + 1;
+                    total += extra; infoDado.extra = extra;
+                }
+                rolagens.push(infoDado);
+            }
+            total += mod;
+            exibirResultado(total, rolagens, mod, criticos);
         }
 
-        function openFullSheet(index) {
-            const char = todosDados[index];
-            const modal = document.getElementById('fullSheetModal');
+        function exibirResultado(total, rolagens, mod, numCriticos) {
+            const main = document.getElementById('diceResultMain');
+            const detail = document.getElementById('diceResultDetail');
+
+            main.innerText = total;
+            main.className = "text-7xl font-['Cinzel'] font-bold relative z-10 result-pop";
+            if (numCriticos > 0) main.classList.add("text-emerald-400", "drop-shadow-[0_0_15px_rgba(52,211,153,0.8)]");
+            else main.classList.add("text-white", "drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]");
+
+            let strDetalhe = "[ ";
+            strDetalhe += rolagens.map(r => {
+                if (r.extra > 0) return `<span class="text-emerald-400 font-bold border-b border-emerald-500">${r.base}+${r.extra}</span>`;
+                else if (r.base === 1) return `<span class="text-red-500">${r.base}</span>`;
+                else return `<span class="text-slate-300">${r.base}</span>`;
+            }).join(", ");
+            strDetalhe += " ]" + (mod !== 0 ? ` + <span class="text-yellow-500">${mod}</span>` : "");
+
+            detail.innerHTML = strDetalhe;
+            detail.className = "text-[10px] text-slate-400 mt-3 font-mono leading-relaxed break-words w-full px-4 relative z-10";
             
-            // Popula os dados
-            document.getElementById('fsName').innerText = char.nome;
-            document.getElementById('fsLevel').innerText = "Lvl " + (char.nivel || 0);
+            let textoLog = `${rolagens.length}d10${mod >= 0 ? '+'+mod : mod} >> ${total}`;
+            if (numCriticos > 0) textoLog += " 🔥";
+            enviarLogRolagem(textoLog);
+        }
+
+        async function enviarLogRolagem(textoResultado) {
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "registrarRolagem", usuario: "GM", resumo: textoResultado }) });
+                carregarHistorico();
+            } catch (e) { console.error(e); }
+        }
+
+        async function carregarHistorico() {
+            const div = document.getElementById('listaHistorico');
+            div.innerHTML = '<div class="text-center text-slate-600 text-[10px] italic py-4"><i class="fas fa-circle-notch fa-spin"></i> Buscando...</div>';
+            try {
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "lerHistorico" }) });
+                const data = await response.json();
+                div.innerHTML = ""; 
+                if (data.status === "SUCESSO" && data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const dObj = new Date(log.data);
+                        const hora = !isNaN(dObj) ? dObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : "--:--";
+                        div.innerHTML += `
+                            <div class="border-b border-slate-800/50 pb-1 mb-1 last:border-0">
+                                <div class="flex justify-between text-[9px] text-slate-500"><span class="font-bold text-slate-400">${log.quem}</span><span>${hora}</span></div>
+                                <div class="text-emerald-400 text-xs font-mono font-bold leading-tight mt-1">${log.resultado}</div>
+                            </div>`;
+                    });
+                } else div.innerHTML = '<div class="text-center text-slate-600 text-[10px] italic py-4">Sem registros.</div>';
+            } catch (e) { div.innerHTML = '<div class="text-center text-red-500 text-[10px] py-4">Erro de conexão.</div>'; }
+        }
+
+        async function acaoLimparHistorico() {
+            if(!confirm("MESTRE: Apagar todo o histórico de rolagens?")) return;
+            try {
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "limparHistorico" }) });
+                carregarHistorico();
+            } catch(e) { alert("Erro ao conectar."); }
+        }
+
+        // ==========================================
+        // SISTEMA DE ANOTAÇÕES / HISTÓRIA (NOVO FORMATO RICH TEXT)
+        // ==========================================
+        function abrirHistoriaGM() {
+            document.getElementById('historiaModal').classList.remove('hidden');
+            document.getElementById('historiaModal').classList.add('flex');
+            renderizarListaCapitulos();
+        }
+
+        function fecharHistoriaGM() {
+            document.getElementById('historiaModal').classList.add('hidden');
+            document.getElementById('historiaModal').classList.remove('flex');
+        }
+
+        async function fetchHistoriaNuvem() {
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "carregarHistoria" }) });
+                const data = await res.json();
+                if (data.status === "SUCESSO") {
+                    anotacoesGlobais = data.anotacoes || [];
+                    if(anotacoesGlobais.length === 0) {
+                        anotacoesGlobais.push({ capitulo: "Geral", conteudo: "Anotações iniciais..." });
+                    }
+                    selecionarCapitulo(anotacoesGlobais[0].capitulo);
+                }
+            } catch(e) { console.error("Erro hist", e); }
+        }
+
+        function renderizarListaCapitulos() {
+            const div = document.getElementById('listaCapitulos');
+            div.innerHTML = '';
+            anotacoesGlobais.forEach(nota => {
+                const btn = document.createElement('button');
+                const ativo = (capituloAtivo === nota.capitulo);
+                btn.className = `w-full text-left px-3 py-2 text-sm rounded transition truncate ${ativo ? 'bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/50' : 'text-slate-400 hover:bg-slate-800'}`;
+                btn.innerText = nota.capitulo;
+                btn.onclick = () => selecionarCapitulo(nota.capitulo);
+                div.appendChild(btn);
+            });
+        }
+
+        function selecionarCapitulo(nome) {
+            if (capituloAtivo) {
+               // Mudado de .value para .innerHTML
+               const txtAtual = document.getElementById('historiaContent').innerHTML;
+               const idx = anotacoesGlobais.findIndex(a => a.capitulo === capituloAtivo);
+               if(idx > -1) anotacoesGlobais[idx].conteudo = txtAtual;
+            }
+
+            capituloAtivo = nome;
+            document.getElementById('capituloAtivoNome').innerText = nome;
             
-            // Barras
-            const updateFsBar = (idBar, idTxt, val, max) => {
-                const pct = Math.min(100, Math.max(0, (val/max)*100));
-                document.getElementById(idTxt).innerText = `${val}/${max}`;
-                document.getElementById(idBar).style.width = `${pct}%`;
-            };
-            updateFsBar('fsHpBar', 'fsHpTxt', char.hp_atual, char.hp_max);
-            updateFsBar('fsEthBar', 'fsEthTxt', char.ether_atual, char.ether_max);
-            updateFsBar('fsDesBar', 'fsDesTxt', char.destino_atual, char.destino_max);
-
-            // Imagem Inteligente
-            const hpPct = (char.hp_atual / char.hp_max) * 100;
-            let img = char.img_saudavel;
-            if (hpPct < 25) img = char.img_muito_ferido || char.img_ferido || char.img_saudavel;
-            else if (hpPct < 50) img = char.img_ferido || char.img_saudavel;
-            document.getElementById('fsImage').src = img || 'https://via.placeholder.com/300';
-
-            // Atributos
-            document.getElementById('fsFis').innerText = char.fisico || 0;
-            document.getElementById('fsDes').innerText = char.destreza || 0;
-            document.getElementById('fsCog').innerText = char.cognicao || 0;
-            document.getElementById('fsCar').innerText = char.carisma || 0;
-            document.getElementById('fsPrim').innerText = char.primordio || 0;
-
-            // Ferramentas
-            document.getElementById('fsToolFis').innerText = "+" + (char.ferramenta_fisico || 0);
-            document.getElementById('fsToolDes').innerText = "+" + (char.ferramenta_destreza || 0);
-            document.getElementById('fsToolCog').innerText = "+" + (char.ferramenta_cognicao || 0);
-            document.getElementById('fsToolCar').innerText = "+" + (char.ferramenta_carisma || 0);
-
-            // HTMLs
-            const setFsHtml = (id, content) => {
-                document.getElementById(id).innerHTML = content ? content.replace(/\n/g, "<br>") : "<em class='text-gray-600'>Vazio</em>";
-            };
-            setFsHtml('fsHtmlAtaques', char.html_ataques);
-            setFsHtml('fsHtmlDons', char.html_dons);
-            setFsHtml('fsHtmlEquip', char.html_equipamentos);
-            setFsHtml('fsHtmlDefesa', char.html_defesa);
-
-            // Fecha lista e abre ficha
-            document.getElementById('charListModal').classList.add('hidden');
-            document.getElementById('charListModal').classList.remove('flex');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            const nota = anotacoesGlobais.find(a => a.capitulo === nome);
+            // Mudado de .value para .innerHTML
+            document.getElementById('historiaContent').innerHTML = nota ? nota.conteudo : "";
+            renderizarListaCapitulos();
         }
 
-        function closeFullSheet() {
-            document.getElementById('fullSheetModal').classList.add('hidden');
-            document.getElementById('fullSheetModal').classList.remove('flex');
+        function criarNovoCapitulo() {
+            const input = document.getElementById('novoCapituloNome');
+            let nome = input.value.trim();
+            if(!nome) return;
+            if (anotacoesGlobais.find(a => a.capitulo.toLowerCase() === nome.toLowerCase())) {
+                alert("Capítulo já existe!"); return;
+            }
+            anotacoesGlobais.push({ capitulo: nome, conteudo: "" });
+            input.value = "";
+            selecionarCapitulo(nome);
         }
 
+        async function salvarAnotacaoAtual() {
+            if (!capituloAtivo) return;
+            // Mudado de .value para .innerHTML
+            const conteudo = document.getElementById('historiaContent').innerHTML;
+            
+            const idx = anotacoesGlobais.findIndex(a => a.capitulo === capituloAtivo);
+            if(idx > -1) anotacoesGlobais[idx].conteudo = conteudo;
 
-        // --- GRID / MESA (Mantido) ---
+            const btn = document.getElementById('btnSalvarHistoria');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "salvarHistoria", capitulo: capituloAtivo, conteudo: conteudo })
+                });
+                const data = await res.json();
+                if(data.status === "SUCESSO") {
+                    document.getElementById('statusHistoria').innerText = "Salvo " + new Date().toLocaleTimeString();
+                } else alert("Erro ao salvar.");
+            } catch(e) { alert("Falha na conexão."); }
+            
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar Nuvem';
+        }
+
+        async function excluirCapituloAtual() {
+            if (!capituloAtivo) return;
+            if (!confirm("Tem certeza que deseja DELETAR o capítulo: " + capituloAtivo + "? Isso não pode ser desfeito.")) return;
+
+            const btn = document.getElementById('btnSalvarHistoria');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "excluirHistoria", capitulo: capituloAtivo })
+                });
+                const data = await res.json();
+                
+                if (data.status === "SUCESSO") {
+                    // Remove do array local
+                    anotacoesGlobais = anotacoesGlobais.filter(a => a.capitulo !== capituloAtivo);
+                    capituloAtivo = null;
+                    document.getElementById('historiaContent').innerHTML = "";
+                    document.getElementById('capituloAtivoNome').innerText = "Selecione um capítulo";
+                    document.getElementById('statusHistoria').innerText = "Capítulo Excluído";
+                    
+                    if (anotacoesGlobais.length > 0) {
+                        selecionarCapitulo(anotacoesGlobais[0].capitulo);
+                    } else {
+                        renderizarListaCapitulos();
+                    }
+                } else {
+                    alert("Erro ao excluir: " + data.message);
+                }
+            } catch(e) { alert("Falha na conexão."); }
+            
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar Nuvem';
+        }
+
+        // ==========================================
+        // GRID / MESA / SALVAMENTO DA FICHA
+        // ==========================================
         function renderizarGrid() {
             const container = document.getElementById('gridMesa');
-            if (personagensNaMesa.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-center text-gray-600 py-10 italic">Nenhum personagem na mesa de combate.</div>';
-                return;
-            }
+            if (personagensNaMesa.length === 0) { container.innerHTML = '<div class="col-span-full text-center text-gray-600 py-10 italic">Nenhum personagem na mesa de combate.</div>'; return; }
             container.innerHTML = '';
 
             personagensNaMesa.forEach(indexChar => {
                 const char = todosDados[indexChar];
-                const getValor = (campo) => {
-                    const chave = `${indexChar}-${campo}`;
-                    if (filaDeMudancas.hasOwnProperty(chave)) return filaDeMudancas[chave];
-                    return parseInt(char[campo] || 0);
-                };
-                const check = (campo) => {
-                    const chave = `${indexChar}-${campo}`;
-                    return filaDeMudancas.hasOwnProperty(chave) ? 'nao-salvo' : 'text-white';
-                };
+                const getV = (campo) => filaDeMudancas.hasOwnProperty(`${indexChar}-${campo}`) ? filaDeMudancas[`${indexChar}-${campo}`] : parseInt(char[campo] || 0);
+                const chk = (campo) => filaDeMudancas.hasOwnProperty(`${indexChar}-${campo}`) ? 'nao-salvo' : 'text-white';
 
-                const hpAtual = parseInt(char.hp_atual || 0);
-                const hpMax = parseInt(char.hp_max || 1);
-                const pct = (hpAtual / hpMax) * 100;
-                let img = char.img_saudavel;
-                if(pct < 25) img = char.img_muito_ferido || char.img_saudavel;
-                else if(pct < 50) img = char.img_ferido || char.img_saudavel;
+                const hpA = parseInt(char.hp_atual || 0); const hpM = parseInt(char.hp_max || 1); const pct = (hpA / hpM) * 100;
+                let img = char.img_saudavel; if(pct < 25) img = char.img_muito_ferido || char.img_saudavel; else if(pct < 50) img = char.img_ferido || char.img_saudavel;
                 if(!img) img = 'https://via.placeholder.com/50';
 
                 const card = document.createElement('div');
                 card.className = "bg-gray-800 rounded-lg border border-gray-700 p-3 shadow-lg fade-in relative flex flex-col h-[420px]"; 
                 card.innerHTML = `
                     <button onclick="removerDoGrid('${indexChar}')" class="absolute top-2 right-2 text-gray-600 hover:text-red-500 z-10"><i class="fas fa-times"></i></button>
-                    <div class="flex items-center gap-3 mb-3 shrink-0 cursor-pointer" onclick="openFullSheet(${indexChar})">
-                        <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600">
-                             <img src="${img}" class="w-full h-full object-cover">
-                        </div>
+                    <div class="flex items-center gap-3 mb-3 shrink-0 cursor-pointer hover:bg-slate-700/50 p-1 rounded transition" onclick="openFullSheet(${indexChar})">
+                        <div class="w-12 h-12 rounded-full bg-gray-700 overflow-hidden border border-gray-600"><img src="${img}" class="w-full h-full object-cover"></div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <h3 class="font-bold text-white text-sm leading-tight truncate mr-2">${char.nome || "..."}</h3>
-                            </div>
+                            <h3 class="font-bold text-white text-sm truncate mr-2">${char.nome || "..."}</h3>
                             <p class="text-[10px] text-gray-400">Lvl ${char.nivel || 0} • ${char.cla || "?"}</p>
                         </div>
                     </div>
                     <div class="space-y-2 overflow-y-auto card-scroll pr-1 flex-1">
                         <div class="pb-2 border-b border-gray-700 mb-2">
-                             <div class="flex justify-between items-center mb-1">
-                                <p class="text-[10px] font-bold text-gray-500 uppercase">Vitais</p>
-                                <button onclick="abrirEditor('${indexChar}')" class="text-[10px] text-yellow-500 hover:text-white"><i class="fas fa-pen"></i> Editar Texto</button>
-                            </div>
-                            ${criarLinha(indexChar, COL_HP, 'HP', 'text-red-400', 'bg-red-900', getValor(COL_HP), check(COL_HP))}
-                            ${criarLinha(indexChar, COL_ETHER, 'Éter', 'text-blue-400', 'bg-blue-900', getValor(COL_ETHER), check(COL_ETHER))}
-                            ${criarLinha(indexChar, COL_DESTINO, 'Dest.', 'text-purple-400', 'bg-purple-900', getValor(COL_DESTINO), check(COL_DESTINO))}
+                             <div class="flex justify-between items-center mb-1"><p class="text-[10px] font-bold text-gray-500 uppercase">Vitais</p><button onclick="abrirEditor('${indexChar}')" class="text-[10px] text-yellow-500 hover:text-white"><i class="fas fa-pen"></i> Editar Texto</button></div>
+                            ${cLinha(indexChar, COL_HP, 'HP', 'text-red-400', 'bg-red-900', getV(COL_HP), chk(COL_HP))}
+                            ${cLinha(indexChar, COL_ETHER, 'Éter', 'text-blue-400', 'bg-blue-900', getV(COL_ETHER), chk(COL_ETHER))}
+                            ${cLinha(indexChar, COL_DESTINO, 'Dest.', 'text-purple-400', 'bg-purple-900', getV(COL_DESTINO), chk(COL_DESTINO))}
                         </div>
                          <div>
                             <p class="text-[10px] font-bold text-gray-500 uppercase mb-1">Ferramentas</p>
-                            ${criarLinha(indexChar, COL_TOOL_FIS, 'Físico', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_FIS), check(COL_TOOL_FIS))}
-                            ${criarLinha(indexChar, COL_TOOL_DES, 'Des.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_DES), check(COL_TOOL_DES))}
-                            ${criarLinha(indexChar, COL_TOOL_COG, 'Cog.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_COG), check(COL_TOOL_COG))}
-                            ${criarLinha(indexChar, COL_TOOL_CAR, 'Car.', 'text-orange-400', 'bg-orange-900', getValor(COL_TOOL_CAR), check(COL_TOOL_CAR))}
+                            ${cLinha(indexChar, COL_TOOL_FIS, 'Físico', 'text-orange-400', 'bg-orange-900', getV(COL_TOOL_FIS), chk(COL_TOOL_FIS))}
+                            ${cLinha(indexChar, COL_TOOL_DES, 'Des.', 'text-orange-400', 'bg-orange-900', getV(COL_TOOL_DES), chk(COL_TOOL_DES))}
+                            ${cLinha(indexChar, COL_TOOL_COG, 'Cog.', 'text-orange-400', 'bg-orange-900', getV(COL_TOOL_COG), chk(COL_TOOL_COG))}
+                            ${cLinha(indexChar, COL_TOOL_CAR, 'Car.', 'text-orange-400', 'bg-orange-900', getV(COL_TOOL_CAR), chk(COL_TOOL_CAR))}
                         </div>
                     </div>`;
                 container.appendChild(card);
             });
         }
 
-        function criarLinha(idx, campo, label, txtColor, bgColor, valor, classeExtra) {
-            return `
-            <div class="flex justify-between items-center bg-gray-900/50 rounded px-2 py-1 mb-1">
-                <span class="text-xs font-bold ${txtColor} w-10 truncate" title="${label}">${label}</span>
-                <span id="val-${idx}-${campo}" class="font-mono font-bold text-sm ${classeExtra}">${valor}</span>
+        function cLinha(idx, campo, label, tColor, bColor, valor, extra) {
+            return `<div class="flex justify-between items-center bg-gray-900/50 rounded px-2 py-1 mb-1">
+                <span class="text-xs font-bold ${tColor} w-10 truncate" title="${label}">${label}</span>
+                <span class="font-mono font-bold text-sm ${extra}">${valor}</span>
                 <div class="flex gap-1">
-                    <button onclick="alterarLocal('${idx}', '${campo}', -1)" class="w-6 h-6 flex items-center justify-center ${bgColor} text-white/80 rounded text-xs hover:brightness-110">-</button>
-                    <button onclick="alterarLocal('${idx}', '${campo}', 1)" class="w-6 h-6 flex items-center justify-center bg-gray-700 text-white rounded text-xs hover:bg-gray-600">+</button>
-                </div>
-            </div>`;
+                    <button onclick="alterarLocal('${idx}', '${campo}', -1)" class="w-6 h-6 ${bColor} text-white/80 rounded text-xs hover:brightness-110">-</button>
+                    <button onclick="alterarLocal('${idx}', '${campo}', 1)" class="w-6 h-6 bg-gray-700 text-white rounded text-xs hover:bg-gray-600">+</button>
+                </div></div>`;
         }
+
         function adicionarAoGrid() {
-            const select = document.getElementById('charSelect');
-            const index = select.value;
+            const index = document.getElementById('charSelect').value;
             if (index === "" || personagensNaMesa.includes(index)) return;
-            personagensNaMesa.push(index);
-            renderizarGrid();
+            personagensNaMesa.push(index); renderizarGrid();
         }
         function removerDoGrid(idx) { personagensNaMesa = personagensNaMesa.filter(i => i !== idx); renderizarGrid(); }
+        
         function alterarLocal(index, campo, delta) {
-            const chave = `${index}-${campo}`;
-            const char = todosDados[index];
-            let valorAtual = filaDeMudancas.hasOwnProperty(chave) ? filaDeMudancas[chave] : parseInt(char[campo] || 0);
-            let novo = valorAtual + delta;
-            filaDeMudancas[chave] = novo;
+            const chave = `${index}-${campo}`; const char = todosDados[index];
+            let atual = filaDeMudancas.hasOwnProperty(chave) ? filaDeMudancas[chave] : parseInt(char[campo] || 0);
+            let novo = atual + delta; filaDeMudancas[chave] = novo;
             if (novo === parseInt(char[campo] || 0)) delete filaDeMudancas[chave];
             renderizarGrid(); atualizarBotaoSalvar();
         }
+
         function atualizarBotaoSalvar() {
-            const qtd = Object.keys(filaDeMudancas).length;
-            const btn = document.getElementById('btnSalvar');
-            if (qtd > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); btn.innerHTML = `<i class="fas fa-save"></i> SALVAR (${qtd})`; } 
+            const qtd = Object.keys(filaDeMudancas).length; const btn = document.getElementById('btnSalvar');
+            if (qtd > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); document.getElementById('countMudancas').innerText = qtd; } 
             else { btn.classList.add('hidden'); btn.classList.remove('flex'); }
         }
-        function mostrarLog(msg, colorClass) {
-            const log = document.getElementById('globalLog');
-            log.innerText = msg;
-            log.className = `fixed bottom-4 right-4 bg-gray-800 border border-gray-600 px-4 py-2 rounded shadow-xl text-xs z-50 ${colorClass}`;
-            log.classList.remove('hidden');
-            setTimeout(() => { log.classList.add('hidden'); }, 3000);
+
+        async function sincronizarTudo() {
+            const btn = document.getElementById('btnSalvar');
+            btn.innerHTML = 'SALVANDO...'; btn.disabled = true;
+            const chaves = Object.keys(filaDeMudancas); let erros = 0;
+            
+            for (const k of chaves) {
+                const [idx, campo] = k.split('-'); const char = todosDados[idx];
+                try {
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: "atualizarCampo", nome: char.nome, campo: campo, valor: filaDeMudancas[k] })
+                    });
+                    const json = await res.json();
+                    if(json.status === "SUCESSO") { todosDados[idx][campo] = json.novoValor; delete filaDeMudancas[k]; } 
+                    else erros++;
+                } catch(e) { erros++; }
+            }
+            renderizarGrid(); atualizarBotaoSalvar();
+            if(erros > 0) mostrarLog(`Erro ao salvar ${erros} itens`, "text-red-500");
+            else mostrarLog("Sincronização Perfeita!", "text-green-500");
+            btn.innerHTML = `<i class="fas fa-save"></i> SALVAR`; btn.disabled = false;
         }
-        function logout() { localStorage.removeItem('moger_session'); window.location.href = 'index.html'; }
 
-
-        // EDITOR (Mantido)
+        // ==========================================
+        // UTILITÁRIOS E GRIMÓRIO FULL
+        // ==========================================
         function abrirEditor(index) {
-            editorCharIndex = index;
-            const char = todosDados[index];
+            editorCharIndex = index; const char = todosDados[index];
             document.getElementById('modalCharName').innerText = char.nome;
-            const body = document.getElementById('editorBody');
-            body.innerHTML = '';
+            const body = document.getElementById('editorBody'); body.innerHTML = '';
             CAMPOS_TEXTO.forEach(c => {
-                const chave = `${index}-${c.id}`;
-                const val = filaDeMudancas[chave] || char[c.id] || "";
-                body.innerHTML += `
-                    <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
-                        <label class="block text-sm font-bold text-gray-400 mb-2 uppercase"><i class="fas ${c.icon}"></i> ${c.label}</label>
-                        <div class="flex gap-1 mb-2 border-b border-gray-700 pb-2">
-                             <button class="toolbar-btn" onclick="document.execCommand('bold')">B</button>
-                             <button class="toolbar-btn" onclick="document.execCommand('italic')">I</button>
-                        </div>
-                        <div id="editor-${c.id}" class="editor-content" contenteditable="true">${val}</div>
-                    </div>`;
+                const val = filaDeMudancas[`${index}-${c.id}`] || char[c.id] || "";
+                body.innerHTML += `<div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"><label class="block text-sm font-bold text-gray-400 mb-2 uppercase"><i class="fas ${c.icon}"></i> ${c.label}</label><div class="flex gap-1 mb-2 border-b border-gray-700 pb-2"><button class="toolbar-btn" onclick="document.execCommand('bold')">B</button><button class="toolbar-btn" onclick="document.execCommand('italic')">I</button></div><div id="editor-${c.id}" class="editor-content" contenteditable="true">${val}</div></div>`;
             });
-            document.getElementById('textEditorModal').classList.remove('hidden');
-            document.getElementById('textEditorModal').classList.add('flex');
+            document.getElementById('textEditorModal').classList.remove('hidden'); document.getElementById('textEditorModal').classList.add('flex');
         }
         function fecharEditor() { document.getElementById('textEditorModal').classList.add('hidden'); document.getElementById('textEditorModal').classList.remove('flex'); }
         function salvarEdicoesTexto() {
             CAMPOS_TEXTO.forEach(c => {
                 const el = document.getElementById(`editor-${c.id}`);
                 if (el) {
-                    const novo = el.innerHTML;
-                    const original = todosDados[editorCharIndex][c.id] || "";
+                    const novo = el.innerHTML; const original = todosDados[editorCharIndex][c.id] || "";
                     if (novo !== original) filaDeMudancas[`${editorCharIndex}-${c.id}`] = novo;
                 }
             });
             fecharEditor(); atualizarBotaoSalvar(); mostrarLog("Textos prontos para salvar", "text-blue-400");
         }
-        async function sincronizarTudo() {
-            const btn = document.getElementById('btnSalvar');
-            btn.innerHTML = 'SALVANDO...'; btn.disabled = true;
-            const chaves = Object.keys(filaDeMudancas);
-            let erros = 0;
-            for (const k of chaves) {
-                const [idx, campo] = k.split('-');
-                const char = todosDados[idx];
-                try {
-                    const res = await fetch(API_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ nome: char.nome, campo: campo, valor: filaDeMudancas[k] })
-                    });
-                    const json = await res.json();
-                    if(json.status === "SUCESSO") {
-                        todosDados[idx][campo] = json.novoValor;
-                        delete filaDeMudancas[k];
-                    } else erros++;
-                } catch(e) { erros++; }
-            }
-            renderizarGrid(); atualizarBotaoSalvar();
-            if(erros > 0) mostrarLog(`Erro ao salvar ${erros} itens`, "text-red-500");
-            else mostrarLog("Tudo salvo!", "text-green-500");
-            btn.disabled = false;
+
+        function toggleCharListModal() { const m = document.getElementById('charListModal'); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
+        function closeFullSheet() { document.getElementById('fullSheetModal').classList.add('hidden'); document.getElementById('fullSheetModal').classList.remove('flex'); }
+        
+        function construirCorpoFichaModal() {
+            // Estrutura Visual fiel ao INDEX.HTML injetada aqui
+            document.getElementById('fsBodyContent').innerHTML = `
+                <!-- STATUS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-red-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2"><i class="fas fa-heart"></i> Saúde</span>
+                            <span id="fsHpTxt" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">0/0</span>
+                        </div>
+                        <div class="bar-track"><div id="fsHpBar" class="h-full hp-fill transition-all duration-700 ease-out" style="width: 0%"></div></div>
+                    </div>
+                    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-blue-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2"><i class="fas fa-bolt"></i> Energia</span>
+                            <span id="fsEthTxt" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]">0/0</span>
+                        </div>
+                        <div class="bar-track"><div id="fsEthBar" class="h-full ether-fill transition-all duration-700 ease-out" style="width: 0%"></div></div>
+                    </div>
+                    <div class="bg-black p-4 rounded-xl border border-slate-800 shadow-lg relative overflow-hidden group">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-yellow-500 text-[13px] uppercase font-bold tracking-[0.2em] flex items-center gap-2"><i class="fas fa-star"></i> Poder</span>
+                            <span id="fsDesTxt" class="text-white font-['Cinzel'] font-bold text-xl drop-shadow-[0_0_5px_rgba(250,204,21,0.5)]">0/0</span>
+                        </div>
+                        <div class="bar-track"><div id="fsDesBar" class="h-full destino-fill transition-all duration-700 ease-out" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <!-- MARCADORES -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 mb-6"> 
+                    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group">
+                        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+                            <div class="flex items-center gap-2"><i class="fas fa-bullseye text-emerald-500 text-sm drop-shadow-[0_0_5px_rgba(16,185,129,0.8)]"></i><span class="text-slate-400 text-xs font-bold tracking-[0.2em]">ALCANCE</span></div>
+                            <span id="fsAlcanceNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+                        </div>
+                        <div class="w-full bg-slate-900/40 border border-emerald-500/20 rounded-lg py-4 text-center relative overflow-hidden"><span id="fsAlcanceDetalhe" class="text-2xl font-black text-emerald-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]">0m</span></div>
+                    </div>
+                    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group">
+                        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+                            <div class="flex items-center gap-2"><i class="fas fa-running text-cyan-500 text-sm drop-shadow-[0_0_5px_rgba(6,182,212,0.8)]"></i><span class="text-slate-400 text-xs font-bold tracking-[0.2em]">MOVIMENTO</span></div>
+                            <span id="fsMovimentoNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+                        </div>
+                        <div class="w-full bg-slate-900/40 border border-cyan-500/20 rounded-lg py-4 text-center relative overflow-hidden"><span id="fsMovimentoDetalhe" class="text-xl font-black text-cyan-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">0m Ação</span></div>
+                    </div>
+                    <div class="bg-black p-3 rounded-xl border border-slate-800 shadow-lg flex flex-col items-center group">
+                        <div class="flex items-center justify-between w-full px-2 mb-3 border-b border-slate-800/50 pb-2">
+                            <div class="flex items-center gap-2"><i class="fas fa-shield-alt text-violet-500 text-sm drop-shadow-[0_0_5px_rgba(139,92,246,0.8)]"></i><span class="text-slate-400 text-xs font-bold tracking-[0.2em]">FORTITUDE</span></div>
+                            <span id="fsFortitudeNivel" class="text-white font-['Cinzel'] font-bold text-lg bg-slate-900 border border-slate-800 px-3 rounded shadow-inner">0</span>
+                        </div>
+                        <div class="w-full bg-slate-900/40 border border-violet-500/20 rounded-lg py-4 text-center relative overflow-hidden"><span id="fsFortitudeDetalhe" class="text-2xl font-black text-violet-400 font-mono block leading-none drop-shadow-[0_0_8px_rgba(167,139,250,0.6)]">0 Kg</span></div>
+                    </div>
+                </div>
+
+                <!-- IMAGEM E ATRIBUTOS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <div class="relative aspect-[10/17] rounded-xl overflow-hidden shadow-2xl border-2 border-slate-700 bg-black">
+                            <img id="fsImage" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 left-4"><span id="fsLevel" class="bg-yellow-700 text-white text-xs px-2 py-1 rounded font-bold border border-yellow-500">Nível ?</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-2 flex flex-col gap-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative"><span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Físico</span><span id="fsFis" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span></div>
+                            <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative"><span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Destreza</span><span id="fsDes" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span></div>
+                            <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative"><span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Cognição</span><span id="fsCog" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span></div>
+                            <div class="bg-black p-4 rounded-xl border border-slate-700 shadow-xl flex flex-col items-center justify-center relative"><span class="text-white text-[10px] uppercase tracking-[0.2em] font-bold mb-2 z-10 border-b border-slate-800 w-full text-center pb-1">Carisma</span><span id="fsCar" class="text-4xl text-white font-['Cinzel'] font-bold z-10 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">0</span></div>
+                            <div class="col-span-2 bg-black p-3 rounded-xl border border-slate-700 shadow-2xl flex justify-between items-center px-6 relative"><span class="text-white text-xs uppercase font-bold tracking-[0.3em] z-10 flex items-center gap-2"><i class="fas fa-moon text-slate-400"></i> Primórdio</span><span id="fsPrim" class="text-4xl font-['Cinzel'] font-bold text-white z-10 drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">0</span></div>
+                        </div>
+                        <div class="bg-black/50 rounded-lg border border-slate-700 p-4">
+                            <h4 class="text-[11px] text-slate-400 uppercase font-bold mb-3 border-b border-slate-800 pb-2 flex items-center tracking-widest"><i class="fas fa-tools mr-2"></i> Ferramentas de Combate</h4>
+                            <div class="grid grid-cols-4 gap-3 text-center">
+                                <div class="bg-black rounded border border-slate-600 p-2"><span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">RESISTIR | ESMAGAR</span><span id="fsToolFis" class="text-sm font-mono text-white font-bold">+0</span></div>
+                                <div class="bg-black rounded border border-slate-600 p-2"><span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">EVADIR | ABDICAR</span><span id="fsToolDes" class="text-sm font-mono text-white font-bold">+0</span></div>
+                                <div class="bg-black rounded border border-slate-600 p-2"><span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">PREVER | CONCENTRAR</span><span id="fsToolCog" class="text-sm font-mono text-white font-bold">+0</span></div>
+                                <div class="bg-black rounded border border-slate-600 p-2"><span class="block text-[10px] text-slate-500 uppercase tracking-wider mb-1">RECUPERAR | INTIMIDAR</span><span id="fsToolCar" class="text-sm font-mono text-white font-bold">+0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABAS DE CONTEÚDO -->
+                <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700 overflow-hidden mt-6">
+                    <div class="flex overflow-x-auto bg-slate-900/50 border-b border-slate-700">
+                        <button onclick="fsSwitchTab('ataques')" class="fs-tab-btn active px-6 py-4 text-sm font-bold text-indigo-400 border-b-2 border-indigo-500 whitespace-nowrap" data-tab="ataques">Ataques</button>
+                        <button onclick="fsSwitchTab('dons')" class="fs-tab-btn px-6 py-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap" data-tab="dons">Dons</button>
+                        <button onclick="fsSwitchTab('equip')" class="fs-tab-btn px-6 py-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap" data-tab="equip">Equipamento</button>
+                        <button onclick="fsSwitchTab('defesa')" class="fs-tab-btn px-6 py-4 text-sm font-bold text-slate-400 hover:text-white border-b-2 border-transparent whitespace-nowrap" data-tab="defesa">Defesa</button>
+                    </div>
+                    <div class="p-6 min-h-[200px]">
+                        <div id="fs-tab-ataques" class="fs-tab-content fade-in html-content text-slate-300 text-sm leading-relaxed"></div>
+                        <div id="fs-tab-dons" class="fs-tab-content hidden fade-in html-content text-slate-300 text-sm leading-relaxed"></div>
+                        <div id="fs-tab-equip" class="fs-tab-content hidden fade-in html-content text-slate-300 text-sm leading-relaxed"></div>
+                        <div id="fs-tab-defesa" class="fs-tab-content hidden fade-in html-content text-slate-300 text-sm leading-relaxed"></div>
+                    </div>
+                </div>`;
         }
+
+        function fsSwitchTab(tabName) {
+            document.querySelectorAll('.fs-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.fs-tab-btn').forEach(el => { 
+                el.classList.remove('text-indigo-400', 'border-indigo-500'); 
+                el.classList.add('text-slate-400', 'border-transparent'); 
+            });
+            document.getElementById(`fs-tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.querySelector(`.fs-tab-btn[data-tab="${tabName}"]`);
+            if (activeBtn) { 
+                activeBtn.classList.add('text-indigo-400', 'border-indigo-500'); 
+                activeBtn.classList.remove('text-slate-400', 'border-transparent'); 
+            }
+        }
+
+        function openFullSheet(index) {
+            const char = todosDados[index]; const modal = document.getElementById('fullSheetModal');
+            document.getElementById('fsName').innerText = char.nome; document.getElementById('fsLevel').innerText = "Nível " + (char.nivel || 0);
+            
+            const upB = (idB, idT, val, max) => { document.getElementById(idT).innerText = `${val}/${max}`; document.getElementById(idB).style.width = `${Math.min(100, Math.max(0, (val/max)*100))}%`; };
+            upB('fsHpBar', 'fsHpTxt', char.hp_atual, char.hp_max); upB('fsEthBar', 'fsEthTxt', char.ether_atual, char.ether_max); upB('fsDesBar', 'fsDesTxt', char.destino_atual, char.destino_max);
+
+            const hpPct = (char.hp_atual / char.hp_max) * 100; let img = char.img_saudavel;
+            if (hpPct < 25) img = char.img_muito_ferido || char.img_saudavel; else if (hpPct < 50) img = char.img_ferido || char.img_saudavel;
+            document.getElementById('fsImage').src = img || 'https://via.placeholder.com/300x400?text=Sem+Imagem';
+
+            document.getElementById('fsFis').innerText = char.fisico || 0; document.getElementById('fsDes').innerText = char.destreza || 0; document.getElementById('fsCog').innerText = char.cognicao || 0; document.getElementById('fsCar').innerText = char.carisma || 0; document.getElementById('fsPrim').innerText = char.primordio || 0;
+            document.getElementById('fsToolFis').innerText = "+" + (char.ferramenta_fisico || 0); document.getElementById('fsToolDes').innerText = "+" + (char.ferramenta_destreza || 0); document.getElementById('fsToolCog').innerText = "+" + (char.ferramenta_cognicao || 0); document.getElementById('fsToolCar').innerText = "+" + (char.ferramenta_carisma || 0);
+
+            // Marcadores Extras
+            document.getElementById('fsAlcanceNivel').innerText = char.alcance_atual || 0;
+            document.getElementById('fsAlcanceDetalhe').innerText = (char.alcance_max || 0) + "m";
+            document.getElementById('fsMovimentoNivel').innerText = char.movimento_atual || 0;
+            document.getElementById('fsMovimentoDetalhe').innerText = (char.movimento_max || 0) + "m Ação";
+            document.getElementById('fsFortitudeNivel').innerText = char.fortitude_atual || 0;
+            document.getElementById('fsFortitudeDetalhe').innerText = (char.fortitude_max || 0) + " Kg";
+
+            const setH = (id, c) => document.getElementById(id).innerHTML = c ? c.replace(/\n/g, "<br>") : "<em class='text-gray-600'>Vazio</em>";
+            setH('fs-tab-ataques', char.html_ataques); setH('fs-tab-dons', char.html_dons); setH('fs-tab-equip', char.html_equipamentos); setH('fs-tab-defesa', char.html_defesa);
+
+            document.getElementById('charListModal').classList.add('hidden'); document.getElementById('charListModal').classList.remove('flex');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
+        function mostrarLog(msg, colorClass) {
+            const log = document.getElementById('globalLog');
+            log.innerText = msg; log.className = `fixed bottom-4 right-4 bg-gray-800 border border-gray-600 px-4 py-2 rounded shadow-xl text-xs z-50 ${colorClass}`;
+            log.classList.remove('hidden'); setTimeout(() => { log.classList.add('hidden'); }, 3000);
+        }
+        function logout() { localStorage.removeItem('moger_session'); window.location.href = 'index.html'; }
+
     </script>
 </body>
 </html>
